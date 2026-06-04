@@ -6,27 +6,27 @@ import CssBaseline from "@mui/material/CssBaseline";
 
 const theme = createTheme({
   palette: {
-    mode: "dark",
+    mode: "light",
     primary: {
-      main: "#22c55e", // brand-primary (emerald)
-      light: "#4ade80",
+      main: "#1aa35a", // brand-primary (emerald)
+      light: "#22c55e",
       dark: "#15803d",
     },
     secondary: {
-      main: "#f59e0b", // brand-secondary (amber)
-      light: "#fbbf24",
+      main: "#d97706", // brand-secondary (amber)
+      light: "#f59e0b",
       dark: "#b45309",
     },
     background: {
-      default: "hsl(140, 20%, 6%)", // matches global.css
-      paper: "hsla(140, 15%, 11%, 0.95)",
+      default: "hsl(140, 24%, 97%)", // matches global.css
+      paper: "#ffffff",
     },
     text: {
-      primary: "hsl(140, 20%, 96%)",
-      secondary: "hsl(140, 10%, 75%)",
-      disabled: "hsl(140, 8%, 50%)",
+      primary: "hsl(140, 24%, 12%)",
+      secondary: "hsl(215, 16%, 35%)",
+      disabled: "hsl(215, 12%, 55%)",
     },
-    divider: "hsla(140, 20%, 100%, 0.07)",
+    divider: "rgba(0, 0, 0, 0.08)",
   },
   typography: {
     fontFamily: "var(--font-jakarta), sans-serif",

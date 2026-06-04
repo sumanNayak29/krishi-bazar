@@ -17,7 +17,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Krishi Bazar | Premium Agricultural Marketplace",
+  title: "Krishi Bazar ",
   description: "Empowering farmers and merchants with a smart, direct, and transparent agricultural trading ecosystem.",
   keywords: ["agriculture", "trading platform", "direct-to-farmer", "smart bazaar", "krishi bazar", "agritech"],
 };

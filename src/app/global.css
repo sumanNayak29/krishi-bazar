@@ -1,22 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand Theme Colors */
-  --color-brand-bg-main: hsl(140, 20%, 6%);
-  --color-brand-bg-surface: hsla(140, 15%, 11%, 0.6);
-  --color-brand-bg-card: hsla(140, 15%, 14%, 0.85);
+  /* Brand Theme Colors (Light Mode optimized for Farmers) */
+  --color-brand-bg-main: hsl(140, 24%, 97%);
+  --color-brand-bg-surface: hsl(0, 0%, 100%);
+  --color-brand-bg-card: hsl(0, 0%, 100%);
   
-  --color-brand-primary: hsl(142, 70%, 45%);
-  --color-brand-primary-glow: hsla(142, 70%, 45%, 0.15);
-  --color-brand-secondary: hsl(38, 92%, 52%);
-  --color-brand-secondary-glow: hsla(38, 92%, 52%, 0.15);
+  --color-brand-primary: hsl(148, 73%, 37%);
+  --color-brand-primary-glow: hsla(148, 73%, 37%, 0.08);
+  --color-brand-secondary: hsl(32, 95%, 44%);
+  --color-brand-secondary-glow: hsla(32, 95%, 44%, 0.08);
   
-  --color-brand-text-primary: hsl(140, 20%, 96%);
-  --color-brand-text-secondary: hsl(140, 10%, 75%);
-  --color-brand-text-muted: hsl(140, 8%, 50%);
+  --color-brand-text-primary: hsl(140, 24%, 12%);
+  --color-brand-text-secondary: hsl(215, 16%, 35%);
+  --color-brand-text-muted: hsl(215, 12%, 55%);
   
-  --color-brand-border-light: hsla(140, 20%, 100%, 0.07);
-  --color-brand-border-glow: hsla(142, 70%, 45%, 0.25);
+  --color-brand-border-light: hsla(0, 0%, 0%, 0.08);
+  --color-brand-border-glow: hsla(148, 73%, 37%, 0.15);
   
   /* Fonts */
   --font-jakarta: var(--font-jakarta);
@@ -43,8 +43,8 @@ body::before {
   bottom: 0;
   z-index: -1;
   background: 
-    radial-gradient(circle at 10% 20%, hsla(142, 70%, 45%, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, hsla(38, 92%, 52%, 0.06) 0%, transparent 40%);
+    radial-gradient(circle at 10% 20%, hsla(142, 68%, 32%, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, hsla(38, 92%, 40%, 0.03) 0%, transparent 40%);
   pointer-events: none;
 }
 

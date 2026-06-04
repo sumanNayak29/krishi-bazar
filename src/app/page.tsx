@@ -11,14 +11,15 @@ import {
   TextField, 
   InputAdornment
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import PlaceIcon from "@mui/icons-material/Place";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import TrendingDownIcon from "@mui/icons-material/TrendingDown";
-import StorefrontIcon from "@mui/icons-material/Storefront";
-import GppGoodIcon from "@mui/icons-material/GppGood";
-import AssessmentIcon from "@mui/icons-material/Assessment";
-import LocalAtmIcon from "@mui/icons-material/LocalAtm";
+import {
+  SearchIcon,
+  PlaceIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  StorefrontIcon,
+  AssessmentIcon,
+  LocalAtmIcon
+} from "@/icons";
 
 interface Crop {
   id: string;
@@ -82,7 +83,7 @@ export default function HomePage() {
       {/* Navbar */}
       <nav className="flex justify-between items-center px-[5%] py-5 sticky top-0 z-50 backdrop-blur-md bg-brand-bg-main/70 border-b border-brand-border-light">
         <div className="flex items-center gap-2 text-2xl font-extrabold tracking-tight font-outfit">
-          <span className="inline-flex items-center justify-center w-8 height-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary text-sm text-white font-sans p-1">🌾</span>
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary text-sm text-white font-sans p-1">🌾</span>
           <span>Krishi Bazar</span>
         </div>
         <ul className="hidden md:flex gap-8 list-none">
@@ -103,7 +104,7 @@ export default function HomePage() {
           </li>
         </ul>
         <div className="flex items-center gap-4">
-          <Button variant="outlined" color="inherit" sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600 }}>
+          <Button component={Link} href="/register/merchant" variant="outlined" color="primary" sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600 }}>
             Merchant Portal
           </Button>
           <Button component={Link} href="/register/farmer" variant="contained" color="primary" sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600, color: "#fff" }}>
@@ -128,7 +129,7 @@ export default function HomePage() {
             <Button component={Link} href="#market" variant="contained" color="primary" size="large" sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600, color: "#fff", px: 4, py: 1.5 }}>
               Explore Mandi Prices
             </Button>
-            <Button onClick={() => alert("Registration portals will be online soon!")} variant="outlined" color="inherit" size="large" sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600, px: 4, py: 1.5 }}>
+            <Button onClick={() => alert("Registration portals will be online soon!")} variant="outlined" color="primary" size="large" sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600, px: 4, py: 1.5 }}>
               Learn How It Works
             </Button>
           </div>
@@ -366,7 +367,7 @@ export default function HomePage() {
             <Button component={Link} href="/register/farmer" variant="contained" color="primary" size="large" sx={{ padding: "0.8rem 2rem", fontSize: "1rem", color: "#fff", fontWeight: 600 }}>
               Register as Farmer
             </Button>
-            <Button onClick={() => alert("Merchant registration launches next month!")} variant="outlined" color="inherit" size="large" sx={{ padding: "0.8rem 2rem", fontSize: "1rem", fontWeight: 600 }}>
+            <Button component={Link} href="/register/merchant" variant="outlined" color="primary" size="large" sx={{ padding: "0.8rem 2rem", fontSize: "1rem", fontWeight: 600 }}>
               Apply as Buyer
             </Button>
           </div>
@@ -378,7 +379,7 @@ export default function HomePage() {
         <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
           <div className="lg:col-span-2 flex flex-col gap-4">
             <div className="flex items-center gap-2 text-2xl font-extrabold tracking-tight font-outfit">
-              <span className="inline-flex items-center justify-center w-8 height-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary text-sm text-white font-sans p-1">🌾</span>
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary text-sm text-white font-sans p-1">🌾</span>
               <span>Krishi Bazar</span>
             </div>
             <p className="text-brand-text-secondary text-sm leading-relaxed max-w-[280px]">
