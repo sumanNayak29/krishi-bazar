@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import ThemeRegistry from "@/theme/ThemeRegistry";
 import "./global.css";
 
 const outfit = Outfit({
@@ -27,7 +29,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${outfit.variable} ${jakarta.variable}`}>
-      <body>{children}</body>
+      <body>
+        <AppRouterCacheProvider>
+          <ThemeRegistry>
+            {children}
+          </ThemeRegistry>
+        </AppRouterCacheProvider>
+      </body>
     </html>
   );
 }

@@ -1,13 +1,30 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import styles from "./page.module.css";
+import Link from "next/link";
+import { 
+  Button, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  TextField, 
+  InputAdornment
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import PlaceIcon from "@mui/icons-material/Place";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import GppGoodIcon from "@mui/icons-material/GppGood";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import LocalAtmIcon from "@mui/icons-material/LocalAtm";
 
 interface Crop {
   id: string;
   name: string;
   category: "Cereals" | "Oilseeds" | "Vegetables" | "Spices";
-  price: number; // raw number for calculations
+  price: number;
   unit: string;
   change: number;
   mandi: string;
@@ -61,132 +78,171 @@ export default function HomePage() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className="min-h-screen flex flex-col relative">
       {/* Navbar */}
-      <nav className={styles.navbar}>
-        <div className={styles.logo}>
-          <span className={styles.logoIcon}>🌾</span>
+      <nav className="flex justify-between items-center px-[5%] py-5 sticky top-0 z-50 backdrop-blur-md bg-brand-bg-main/70 border-b border-brand-border-light">
+        <div className="flex items-center gap-2 text-2xl font-extrabold tracking-tight font-outfit">
+          <span className="inline-flex items-center justify-center w-8 height-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary text-sm text-white font-sans p-1">🌾</span>
           <span>Krishi Bazar</span>
         </div>
-        <ul className={styles.navLinks}>
-          <li><a href="#market" className={styles.navLink}>Live Market</a></li>
-          <li><a href="#features" className={styles.navLink}>Core Ecosystem</a></li>
-          <li><a href="#cta" className={styles.navLink}>Get Started</a></li>
+        <ul className="hidden md:flex gap-8 list-none">
+          <li>
+            <a href="#market" className="text-sm font-medium text-brand-text-secondary hover:text-brand-primary transition-all duration-300">
+              Live Market
+            </a>
+          </li>
+          <li>
+            <a href="#features" className="text-sm font-medium text-brand-text-secondary hover:text-brand-primary transition-all duration-300">
+              Core Ecosystem
+            </a>
+          </li>
+          <li>
+            <a href="#cta" className="text-sm font-medium text-brand-text-secondary hover:text-brand-primary transition-all duration-300">
+              Get Started
+            </a>
+          </li>
         </ul>
-        <div className={styles.navActions}>
-          <button className={styles.btnSecondary}>Merchant Portal</button>
-          <button className={styles.btnPrimary}>Farmer Sign-in</button>
+        <div className="flex items-center gap-4">
+          <Button variant="outlined" color="inherit" sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600 }}>
+            Merchant Portal
+          </Button>
+          <Button component={Link} href="/register/farmer" variant="contained" color="primary" sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600, color: "#fff" }}>
+            Farmer Sign-up
+          </Button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <header className={styles.hero}>
-        <div className={styles.heroContent}>
-          <div className={styles.badge}>
+      <header className="grid grid-cols-1 lg:grid-cols-12 gap-16 px-[5%] py-24 items-center max-w-[1400px] mx-auto w-full">
+        <div className="lg:col-span-7 flex flex-col gap-6 text-center lg:text-left">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary-glow border border-brand-border-glow text-brand-primary text-xs font-semibold self-center lg:self-start">
             <span>🚀</span> Next-Gen Agri-Trading Hub
           </div>
-          <h1 className={`${styles.heroTitle} gradient-text`}>
+          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight leading-none font-outfit gradient-text">
             Empowering Farmers. Connecting Markets.
           </h1>
-          <p className={styles.heroDescription}>
+          <p className="text-lg text-brand-text-secondary max-w-[580px] mx-auto lg:mx-0 leading-relaxed">
             Experience direct-to-buyer crop trading, transparent digital mandis, real-time pricing intelligence, and instant escrowed payouts. Zero middlemen, maximum yield value.
           </p>
-          <div className={styles.heroActions}>
-            <a href="#market" className={styles.btnPrimary} style={{ display: "inline-flex", alignItems: "center" }}>
+          <div className="flex gap-4 mt-4 justify-center lg:justify-start">
+            <Button component={Link} href="#market" variant="contained" color="primary" size="large" sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600, color: "#fff", px: 4, py: 1.5 }}>
               Explore Mandi Prices
-            </a>
-            <button className={styles.btnSecondary} onClick={() => alert("Registration portals will be online soon!")}>
+            </Button>
+            <Button onClick={() => alert("Registration portals will be online soon!")} variant="outlined" color="inherit" size="large" sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600, px: 4, py: 1.5 }}>
               Learn How It Works
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Dashboard Visual Mockup */}
-        <div className={styles.heroVisual}>
-          <div className={styles.dashboardFrame}>
-            <div className={styles.dashboardHeader}>
-              <div className={styles.dashboardTitle}>
-                <span className={styles.dotRed}></span>
-                <span className={styles.dotYellow}></span>
-                <span className={styles.dotGreen}></span>
-                <span style={{ marginLeft: "6px" }}>Bazar Live Feed</span>
+        <div className="lg:col-span-5 relative w-full aspect-[1.1/1] flex justify-center items-center">
+          <div className="w-[90%] h-[90%] p-6 relative z-10 flex flex-col gap-4 rounded-2xl overflow-hidden shadow-2xl bg-brand-bg-card/85 border border-brand-border-light">
+            <div className="flex justify-between items-center border-b border-brand-border-light pb-3">
+              <div className="text-sm font-bold text-brand-text-primary flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                <span className="ml-1.5">Bazar Live Feed</span>
               </div>
-              <span style={{ fontSize: "0.75rem", color: "var(--primary)", fontWeight: 600 }}>● Live Updating</span>
+              <span className="text-xs text-brand-primary font-semibold flex items-center gap-1.5 animate-pulse">● Live Updating</span>
             </div>
 
-            <div className={styles.dashboardContent}>
-              <div className={styles.statRow}>
-                <div className={styles.miniCard}>
-                  <div className={styles.miniCardLabel}>Total Trade Volume</div>
-                  <div className={styles.miniCardVal} style={{ color: "var(--secondary)" }}>₹42.8M</div>
+            <div className="grid grid-rows-[auto_1fr] gap-4 h-full">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-brand-bg-main/60 p-3.5 rounded-xl border border-brand-border-light">
+                  <div className="text-[10px] text-brand-text-muted uppercase tracking-wider font-semibold">Total Trade Volume</div>
+                  <div className="text-xl font-extrabold text-brand-secondary mt-1">₹42.8M</div>
                 </div>
-                <div className={styles.miniCard}>
-                  <div className={styles.miniCardLabel}>Verified Buyers</div>
-                  <div className={styles.miniCardVal} style={{ color: "var(--primary)" }}>1,248</div>
+                <div className="bg-brand-bg-main/60 p-3.5 rounded-xl border border-brand-border-light">
+                  <div className="text-[10px] text-brand-text-muted uppercase tracking-wider font-semibold">Verified Buyers</div>
+                  <div className="text-xl font-extrabold text-brand-primary mt-1">1,248</div>
                 </div>
               </div>
 
-              <div className={styles.chartContainer}>
-                <div className={styles.chartTooltip}>Wheat: +2.5%</div>
-                <div className={styles.chartLines}>
-                  <div className={styles.chartBar} style={{ height: "45%" }}></div>
-                  <div className={styles.chartBar} style={{ height: "65%" }}></div>
-                  <div className={styles.chartBar} style={{ height: "30%" }}></div>
-                  <div className={styles.chartBar} style={{ height: "85%" }}></div>
-                  <div className={`${styles.chartBar} ${styles.chartBarActive}`} style={{ height: "95%" }}></div>
-                  <div className={styles.chartBar} style={{ height: "55%" }}></div>
-                  <div className={styles.chartBar} style={{ height: "70%" }}></div>
+              <div className="bg-brand-bg-main/30 border border-dashed border-brand-border-light rounded-xl flex flex-col justify-end p-4 relative">
+                <div className="absolute top-4 right-4 bg-brand-bg-card p-1.5 px-2.5 rounded-md text-xs border border-brand-border-glow shadow-md">
+                  Wheat: <span className="text-brand-primary font-bold">+2.5%</span>
+                </div>
+                <div className="flex items-end justify-between h-[80px] gap-2.5 w-full">
+                  <div className="flex-1 bg-gradient-to-t from-brand-primary-glow to-brand-primary rounded-t min-h-[20px]" style={{ height: "45%" }}></div>
+                  <div className="flex-1 bg-gradient-to-t from-brand-primary-glow to-brand-primary rounded-t min-h-[20px]" style={{ height: "65%" }}></div>
+                  <div className="flex-1 bg-gradient-to-t from-brand-primary-glow to-brand-primary rounded-t min-h-[20px]" style={{ height: "30%" }}></div>
+                  <div className="flex-1 bg-gradient-to-t from-brand-primary-glow to-brand-primary rounded-t min-h-[20px]" style={{ height: "85%" }}></div>
+                  <div className="flex-1 bg-gradient-to-t from-brand-secondary-glow to-brand-secondary rounded-t min-h-[20px]" style={{ height: "95%" }}></div>
+                  <div className="flex-1 bg-gradient-to-t from-brand-primary-glow to-brand-primary rounded-t min-h-[20px]" style={{ height: "55%" }}></div>
+                  <div className="flex-1 bg-gradient-to-t from-brand-primary-glow to-brand-primary rounded-t min-h-[20px]" style={{ height: "70%" }}></div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Floating Indicators */}
-          <div className={styles.floatingCard1}>
-            <span style={{ color: "#22c55e", fontSize: "1.25rem" }}>📈</span>
+          <div className="absolute bottom-[5%] -left-[5%] p-3.5 px-4 rounded-xl z-20 text-xs flex items-center gap-3 bg-brand-bg-card/95 border border-brand-border-glow shadow-lg animate-[float_6s_ease-in-out_infinite]">
+            <span className="text-green-500 text-lg">📈</span>
             <div>
-              <div style={{ fontWeight: 700 }}>Agra Mandi</div>
-              <div style={{ color: "var(--text-secondary)", fontSize: "0.7rem" }}>Potato: ₹1,500 (+4.2%)</div>
+              <div className="font-bold">Agra Mandi</div>
+              <div className="text-brand-text-secondary text-[10px]">Potato: ₹1,500 (+4.2%)</div>
             </div>
           </div>
 
-          <div className={styles.floatingCard2}>
-            <span style={{ color: "#eab308", fontSize: "1.25rem" }}>🌾</span>
+          <div className="absolute top-[10%] -right-[5%] p-3.5 px-4 rounded-xl z-20 text-xs flex items-center gap-3 bg-brand-bg-card/95 border border-brand-secondary-glow shadow-lg animate-[float_6s_ease-in-out_infinite] [animation-delay:3s]">
+            <span className="text-yellow-500 text-lg">🌾</span>
             <div>
-              <div style={{ fontWeight: 700 }}>New Buyer Match</div>
-              <div style={{ color: "var(--text-secondary)", fontSize: "0.7rem" }}>Wheat Buy Order: 250 Qt</div>
+              <div className="font-bold">New Buyer Match</div>
+              <div className="text-brand-text-secondary text-[10px]">Wheat Buy Order: 250 Qt</div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Market Catalog Section */}
-      <section id="market" className={styles.marketSection}>
-        <div className={styles.sectionHeader}>
-          <div className={styles.sectionTitleBlock}>
-            <h2 className={styles.sectionTitle}>Digital Mandi Catalog</h2>
-            <p className={styles.sectionSubtitle}>Browse current crop pricing across major regional hubs</p>
+      <section id="market" className="py-24 px-[5%] max-w-[1400px] mx-auto w-full">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-4xl font-extrabold tracking-tight font-outfit">Digital Mandi Catalog</h2>
+            <p className="text-brand-text-secondary">Browse current crop pricing across major regional hubs</p>
           </div>
         </div>
 
         {/* Filters and Search controls */}
-        <div className={styles.controls}>
-          <div className={styles.searchWrapper}>
-            <span className={styles.searchIcon}>🔍</span>
-            <input
-              type="text"
+        <div className="flex flex-wrap gap-4 items-center w-full mb-8">
+          <div className="flex-1 min-w-[250px]">
+            <TextField
+              fullWidth
+              size="small"
               placeholder="Search crops or mandi locations..."
-              className={styles.searchInput}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon className="text-brand-text-muted" />
+                    </InputAdornment>
+                  ),
+                }
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "10px",
+                  backgroundColor: "var(--color-brand-bg-surface)",
+                  "& fieldset": { borderColor: "var(--color-brand-border-light)" },
+                  "&:hover fieldset": { borderColor: "var(--color-brand-text-muted)" },
+                  "&.Mui-focused fieldset": { borderColor: "var(--color-brand-primary)" },
+                }
+              }}
             />
           </div>
 
-          <div className={styles.filterTabs}>
+          <div className="flex gap-2">
             {["All", "Cereals", "Oilseeds", "Vegetables", "Spices"].map((category) => (
               <button
                 key={category}
-                className={`${styles.filterTab} ${activeCategory === category ? styles.filterTabActive : ""}`}
+                className={`px-5 py-2.5 rounded-full text-xs font-bold border transition-all duration-300 cursor-pointer ${
+                  activeCategory === category
+                    ? "bg-brand-primary text-white border-brand-primary"
+                    : "bg-transparent text-brand-text-secondary border-brand-border-light hover:border-brand-text-muted"
+                }`}
                 onClick={() => setActiveCategory(category)}
               >
                 {category}
@@ -196,42 +252,59 @@ export default function HomePage() {
         </div>
 
         {/* Crops Cards Grid */}
-        <div className={styles.cropGrid}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredCrops.length > 0 ? (
             filteredCrops.map((crop) => (
-              <div key={crop.id} className={styles.cropCard}>
-                <div className={styles.cropHeader}>
-                  <span className={`${styles.cropCategory} ${crop.category === "Oilseeds" || crop.category === "Spices" ? styles.cropCategorySecondary : ""}`}>
-                    {crop.category}
-                  </span>
-                  <span className={styles.cropMandi}>📍 {crop.mandi}</span>
-                </div>
-
-                <h3 className={styles.cropName}>{crop.name}</h3>
-
-                <div className={styles.cropPriceBlock}>
-                  <div>
-                    <div className={styles.cropPriceLabel}>Current Price</div>
-                    <div className={styles.cropPrice}>
-                      ₹{crop.price.toLocaleString()}
-                      <span className={styles.cropPriceUnit}> / {crop.unit}</span>
-                    </div>
+              <div key={crop.id} className="bg-brand-bg-card border border-brand-border-light rounded-2xl p-6 hover:-translate-y-1 hover:border-brand-border-glow transition-all duration-300 relative overflow-hidden flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-start mb-5">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
+                      crop.category === "Oilseeds" || crop.category === "Spices" 
+                        ? "text-brand-secondary bg-brand-secondary-glow border-brand-secondary-glow" 
+                        : "text-brand-primary bg-brand-primary-glow border-brand-border-glow"
+                    }`}>
+                      {crop.category}
+                    </span>
+                    <span className="text-xs text-brand-text-muted flex items-center gap-1">
+                      <PlaceIcon sx={{ fontSize: 14 }} /> {crop.mandi}
+                    </span>
                   </div>
 
-                  <span className={`${styles.cropChange} ${crop.trend === "up" ? styles.changeUp : styles.changeDown}`}>
-                    {crop.trend === "up" ? "▲" : "▼"} {Math.abs(crop.change)}%
-                  </span>
+                  <h3 className="text-xl font-bold mb-4">{crop.name}</h3>
+
+                  <div className="flex justify-between items-end mt-4">
+                    <div>
+                      <div className="text-[10px] text-brand-text-muted">Current Price</div>
+                      <div className="text-2xl font-extrabold text-brand-text-primary">
+                        ₹{crop.price.toLocaleString()}
+                        <span className="text-xs font-semibold text-brand-text-secondary"> / {crop.unit}</span>
+                      </div>
+                    </div>
+
+                    <span className={`text-xs font-bold flex items-center gap-1 p-1 px-2 rounded-md ${
+                      crop.trend === "up" ? "text-green-500 bg-green-500/10" : "text-red-500 bg-red-500/10"
+                    }`}>
+                      {crop.trend === "up" ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
+                      {Math.abs(crop.change)}%
+                    </span>
+                  </div>
                 </div>
 
-                <div className={styles.cardActions}>
-                  <button className={styles.btnTrade} onClick={() => handleOpenTrade(crop)}>
+                <div className="mt-6">
+                  <Button
+                    fullWidth
+                    onClick={() => handleOpenTrade(crop)}
+                    variant="outlined"
+                    color="primary"
+                    sx={{ textTransform: "none", fontWeight: 600, borderRadius: "10px" }}
+                  >
                     Trade Crop
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))
           ) : (
-            <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "3rem", color: "var(--text-muted)" }}>
+            <div className="col-span-full text-center py-12 text-brand-text-muted">
               No crops matching your search criteria. Try a different query.
             </div>
           )}
@@ -239,34 +312,40 @@ export default function HomePage() {
       </section>
 
       {/* Features Ecosystem Section */}
-      <section id="features" className={styles.featuresSection}>
-        <div className={styles.featuresContainer}>
-          <div style={{ textAlign: "center", maxWidth: "700px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            <h2 className={styles.sectionTitle}>The Krishi Bazar Ecosystem</h2>
-            <p className={styles.sectionSubtitle}>Combining advanced technology with direct agricultural commerce to optimize revenue</p>
+      <section id="features" className="bg-gradient-to-b from-brand-bg-main to-brand-bg-card/50 py-24 px-[5%] border-t border-b border-brand-border-light">
+        <div className="max-w-[1400px] mx-auto w-full flex flex-col gap-16">
+          <div className="text-center max-w-[700px] mx-auto flex flex-col gap-2">
+            <h2 className="text-4xl font-extrabold tracking-tight font-outfit">The Krishi Bazar Ecosystem</h2>
+            <p className="text-brand-text-secondary">Combining advanced technology with direct agricultural commerce to optimize revenue</p>
           </div>
 
-          <div className={styles.featuresGrid}>
-            <div className={`${styles.featureCard} glass`}>
-              <div className={styles.featureIcon}>🤝</div>
-              <h3 className={styles.featureTitle}>Direct Trade</h3>
-              <p className={styles.featureDescription}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-10 rounded-2xl bg-brand-bg-surface border border-brand-border-light hover:-translate-y-1 hover:border-brand-border-glow transition-all duration-300 flex flex-col gap-5">
+              <div className="w-12 h-12 rounded-xl bg-brand-primary-glow border border-brand-border-glow text-brand-primary flex items-center justify-center text-xl">
+                <StorefrontIcon />
+              </div>
+              <h3 className="text-xl font-bold">Direct Trade</h3>
+              <p className="text-brand-text-secondary text-sm leading-relaxed">
                 Connect directly with verified wholesale buyers. By eliminating commissions and multiple middle-agents, farmers retain up to 25% higher profit margins.
               </p>
             </div>
 
-            <div className={`${styles.featureCard} glass`}>
-              <div className={styles.featureIcon}>📊</div>
-              <h3 className={styles.featureTitle}>Smart Analytics</h3>
-              <p className={styles.featureDescription}>
+            <div className="p-10 rounded-2xl bg-brand-bg-surface border border-brand-border-light hover:-translate-y-1 hover:border-brand-border-glow transition-all duration-300 flex flex-col gap-5">
+              <div className="w-12 h-12 rounded-xl bg-brand-primary-glow border border-brand-border-glow text-brand-primary flex items-center justify-center text-xl">
+                <AssessmentIcon />
+              </div>
+              <h3 className="text-xl font-bold">Smart Analytics</h3>
+              <p className="text-brand-text-secondary text-sm leading-relaxed">
                 Access comprehensive historic mandi reports, real-time demand signals, and AI-driven crop price trends to decide exactly when and where to sell.
               </p>
             </div>
 
-            <div className={`${styles.featureCard} glass`}>
-              <div className={styles.featureIcon}>🛡️</div>
-              <h3 className={styles.featureTitle}>Escrow Safeguards</h3>
-              <p className={styles.featureDescription}>
+            <div className="p-10 rounded-2xl bg-brand-bg-surface border border-brand-border-light hover:-translate-y-1 hover:border-brand-border-glow transition-all duration-300 flex flex-col gap-5">
+              <div className="w-12 h-12 rounded-xl bg-brand-primary-glow border border-brand-border-glow text-brand-primary flex items-center justify-center text-xl">
+                <LocalAtmIcon />
+              </div>
+              <h3 className="text-xl font-bold">Escrow Safeguards</h3>
+              <p className="text-brand-text-secondary text-sm leading-relaxed">
                 Secure digital transactions with modern escrow. Funds are locked at commitment and instantly wired directly to farmer bank accounts upon load dispatch confirmation.
               </p>
             </div>
@@ -275,152 +354,170 @@ export default function HomePage() {
       </section>
 
       {/* Call to Action Section */}
-      <section id="cta" className={styles.ctaSection}>
-        <div className={styles.ctaBox}>
-          <h2 className={styles.ctaTitle}>Ready to Experience Modern Agri-Commerce?</h2>
-          <p className={styles.ctaDescription}>
+      <section id="cta" className="py-32 px-[5%] max-w-[1400px] mx-auto w-full flex justify-center">
+        <div className="w-full max-w-[1100px] p-20 text-center relative overflow-hidden rounded-3xl flex flex-col items-center gap-6 bg-gradient-to-br from-brand-bg-card to-brand-primary/10 border border-brand-border-glow shadow-2xl">
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-none font-outfit max-w-[700px]">
+            Ready to Experience Modern Agri-Commerce?
+          </h2>
+          <p className="text-brand-text-secondary text-md max-w-[580px] mb-4">
             Register today to receive real-time price warnings, list crops for live auction, and secure buyer contracts.
           </p>
-          <div className={styles.ctaButtons}>
-            <button className={styles.btnPrimary} style={{ padding: "0.8rem 2rem", fontSize: "1rem" }} onClick={() => alert("Farmer portal launches next month!")}>
+          <div className="flex gap-4">
+            <Button component={Link} href="/register/farmer" variant="contained" color="primary" size="large" sx={{ padding: "0.8rem 2rem", fontSize: "1rem", color: "#fff", fontWeight: 600 }}>
               Register as Farmer
-            </button>
-            <button className={styles.btnSecondary} style={{ padding: "0.8rem 2rem", fontSize: "1rem" }} onClick={() => alert("Merchant registration launches next month!")}>
+            </Button>
+            <Button onClick={() => alert("Merchant registration launches next month!")} variant="outlined" color="inherit" size="large" sx={{ padding: "0.8rem 2rem", fontSize: "1rem", fontWeight: 600 }}>
               Apply as Buyer
-            </button>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className={styles.footer}>
-        <div className={styles.footerContent}>
-          <div className={styles.footerBrand}>
-            <div className={styles.logo}>
-              <span className={styles.logoIcon}>🌾</span>
+      <footer className="py-16 px-[5%] border-t border-brand-border-light bg-brand-bg-main/90">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
+          <div className="lg:col-span-2 flex flex-col gap-4">
+            <div className="flex items-center gap-2 text-2xl font-extrabold tracking-tight font-outfit">
+              <span className="inline-flex items-center justify-center w-8 height-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary text-sm text-white font-sans p-1">🌾</span>
               <span>Krishi Bazar</span>
             </div>
-            <p className={styles.footerDesc}>
+            <p className="text-brand-text-secondary text-sm leading-relaxed max-w-[280px]">
               Building transparency, equity, and reliability in agricultural commerce across India.
             </p>
           </div>
-          <div className={styles.footerColumn}>
-            <h4 className={styles.footerColTitle}>Solutions</h4>
-            <ul className={styles.footerLinks}>
-              <li><a href="#" className={styles.footerLink}>Farmer App</a></li>
-              <li><a href="#" className={styles.footerLink}>Merchant Portal</a></li>
-              <li><a href="#" className={styles.footerLink}>Mandi Spot Trading</a></li>
+          <div className="flex flex-col gap-4">
+            <h4 className="text-sm font-bold uppercase tracking-wider">Solutions</h4>
+            <ul className="list-none flex flex-col gap-3">
+              <li><a href="#" className="text-sm text-brand-text-muted hover:text-brand-primary transition-all">Farmer App</a></li>
+              <li><a href="#" className="text-sm text-brand-text-muted hover:text-brand-primary transition-all">Merchant Portal</a></li>
+              <li><a href="#" className="text-sm text-brand-text-muted hover:text-brand-primary transition-all">Mandi Spot Trading</a></li>
             </ul>
           </div>
-          <div className={styles.footerColumn}>
-            <h4 className={styles.footerColTitle}>Company</h4>
-            <ul className={styles.footerLinks}>
-              <li><a href="#" className={styles.footerLink}>About Us</a></li>
-              <li><a href="#" className={styles.footerLink}>Press Release</a></li>
-              <li><a href="#" className={styles.footerLink}>Contact Support</a></li>
+          <div className="flex flex-col gap-4">
+            <h4 className="text-sm font-bold uppercase tracking-wider">Company</h4>
+            <ul className="list-none flex flex-col gap-3">
+              <li><a href="#" className="text-sm text-brand-text-muted hover:text-brand-primary transition-all">About Us</a></li>
+              <li><a href="#" className="text-sm text-brand-text-muted hover:text-brand-primary transition-all">Press Release</a></li>
+              <li><a href="#" className="text-sm text-brand-text-muted hover:text-brand-primary transition-all">Contact Support</a></li>
             </ul>
           </div>
-          <div className={styles.footerColumn}>
-            <h4 className={styles.footerColTitle}>Regulatory</h4>
-            <ul className={styles.footerLinks}>
-              <li><a href="#" className={styles.footerLink}>APMC Guidelines</a></li>
-              <li><a href="#" className={styles.footerLink}>Privacy Policy</a></li>
-              <li><a href="#" className={styles.footerLink}>Terms of Trading</a></li>
+          <div className="flex flex-col gap-4">
+            <h4 className="text-sm font-bold uppercase tracking-wider">Regulatory</h4>
+            <ul className="list-none flex flex-col gap-3">
+              <li><a href="#" className="text-sm text-brand-text-muted hover:text-brand-primary transition-all">APMC Guidelines</a></li>
+              <li><a href="#" className="text-sm text-brand-text-muted hover:text-brand-primary transition-all">Privacy Policy</a></li>
+              <li><a href="#" className="text-sm text-brand-text-muted hover:text-brand-primary transition-all">Terms of Trading</a></li>
             </ul>
           </div>
         </div>
-        <div className={styles.footerBottom}>
+        <div className="max-w-[1400px] mx-auto border-t border-brand-border-light pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-brand-text-muted gap-4">
           <div>&copy; 2026 Krishi Bazar Technologies Private Limited. All rights reserved.</div>
-          <div style={{ display: "flex", gap: "1.5rem" }}>
-            <a href="#" className={styles.footerLink}>Terms</a>
-            <a href="#" className={styles.footerLink}>Privacy</a>
-            <a href="#" className={styles.footerLink}>Cookies</a>
+          <div className="flex gap-6">
+            <a href="#" className="hover:text-brand-primary transition-all">Terms</a>
+            <a href="#" className="hover:text-brand-primary transition-all">Privacy</a>
+            <a href="#" className="hover:text-brand-primary transition-all">Cookies</a>
           </div>
         </div>
       </footer>
 
-      {/* Trade Simulation Modal */}
+      {/* Trade Simulation Dialog */}
       {selectedCrop && (
-        <div className={styles.modalOverlay} onClick={handleCloseTrade}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            {!tradeSuccess ? (
-              <form onSubmit={handleConfirmTrade}>
-                <h3 className={styles.modalTitle}>
-                  <span>🤝</span> Initiate Digital Trade
-                </h3>
-                
-                <div style={{ margin: "1.5rem 0", display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  <div>
-                    <strong style={{ fontSize: "1.1rem" }}>{selectedCrop.name}</strong>
-                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
-                      Mandi Source: 📍 {selectedCrop.mandi}
-                    </div>
+        <Dialog 
+          open={!!selectedCrop} 
+          onClose={handleCloseTrade}
+          slotProps={{
+            paper: {
+              sx: {
+                backgroundColor: "var(--color-brand-bg-card)",
+                backgroundImage: "none",
+                borderRadius: "20px",
+                border: "1px solid var(--color-brand-border-glow)",
+                width: "100%",
+                maxWidth: "500px",
+                padding: "8px",
+              }
+            }
+          }}
+        >
+          {!tradeSuccess ? (
+            <form onSubmit={handleConfirmTrade}>
+              <DialogTitle className="flex items-center gap-2 text-xl font-bold font-outfit text-brand-primary">
+                <span>🤝</span> Initiate Digital Trade
+              </DialogTitle>
+              
+              <DialogContent className="flex flex-col gap-4 py-4">
+                <div>
+                  <strong className="text-lg text-brand-text-primary">{selectedCrop.name}</strong>
+                  <div className="text-xs text-brand-text-secondary mt-1 flex items-center gap-1">
+                    <PlaceIcon sx={{ fontSize: 14 }} /> Mandi Source: {selectedCrop.mandi}
                   </div>
+                </div>
 
-                  <div style={{ display: "flex", justifyContent: "space-between", background: "hsla(140, 10%, 8%, 0.5)", padding: "0.75rem", borderRadius: "8px" }}>
-                    <span>Spot price:</span>
-                    <strong>₹{selectedCrop.price.toLocaleString()} / {selectedCrop.unit}</strong>
-                  </div>
+                <div className="flex justify-between items-center bg-brand-bg-main/50 p-3 rounded-lg border border-brand-border-light">
+                  <span className="text-sm text-brand-text-secondary">Spot price:</span>
+                  <strong className="text-md text-brand-text-primary">
+                    ₹{selectedCrop.price.toLocaleString()} / {selectedCrop.unit}
+                  </strong>
+                </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                    <label htmlFor="quantity" style={{ fontSize: "0.85rem", fontWeight: 600 }}>
-                      Quantity ({selectedCrop.unit}s):
-                    </label>
-                    <input
-                      id="quantity"
-                      type="number"
-                      min="1"
-                      max="1000"
-                      value={tradeQuantity}
-                      onChange={(e) => setTradeQuantity(Number(e.target.value))}
-                      style={{
-                        padding: "0.6rem",
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="dialog-quantity" className="text-sm font-semibold text-brand-text-secondary">
+                    Quantity ({selectedCrop.unit}s):
+                  </label>
+                  <TextField
+                    id="dialog-quantity"
+                    type="number"
+                    size="small"
+                    slotProps={{ htmlInput: { min: 1, max: 1000 } }}
+                    value={tradeQuantity}
+                    onChange={(e) => setTradeQuantity(Number(e.target.value))}
+                    required
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
                         borderRadius: "8px",
-                        border: "1px solid var(--border-light)",
-                        background: "var(--bg-main)",
-                        color: "var(--text-primary)",
-                        fontSize: "1rem",
-                        width: "100%",
-                      }}
-                      required
-                    />
-                  </div>
-
-                  <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border-light)", paddingTop: "1rem", marginTop: "0.5rem" }}>
-                    <span style={{ fontSize: "1rem", fontWeight: 600 }}>Estimated Total:</span>
-                    <strong style={{ fontSize: "1.25rem", color: "var(--secondary)" }}>
-                      ₹{(selectedCrop.price * tradeQuantity).toLocaleString()}
-                    </strong>
-                  </div>
+                        backgroundColor: "var(--color-brand-bg-main)",
+                        "& fieldset": { borderColor: "var(--color-brand-border-light)" },
+                        "&:hover fieldset": { borderColor: "var(--color-brand-text-muted)" },
+                        "&.Mui-focused fieldset": { borderColor: "var(--color-brand-primary)" },
+                      }
+                    }}
+                  />
                 </div>
 
-                <div className={styles.modalActions} style={{ gap: "0.75rem" }}>
-                  <button type="button" className={styles.btnSecondary} onClick={handleCloseTrade}>
-                    Cancel
-                  </button>
-                  <button type="submit" className={styles.btnPrimary}>
-                    Confirm Escrow Trade
-                  </button>
+                <div className="flex justify-between items-center border-t border-brand-border-light pt-4 mt-2">
+                  <span className="font-semibold text-brand-text-primary">Estimated Total:</span>
+                  <strong className="text-xl text-brand-secondary">
+                    ₹{(selectedCrop.price * tradeQuantity).toLocaleString()}
+                  </strong>
                 </div>
-              </form>
-            ) : (
-              <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🎉</div>
-                <h3 className={styles.modalTitle} style={{ justifyContent: "center", marginBottom: "1rem" }}>
-                  Trade Initiated Successfully!
-                </h3>
-                <div className={styles.modalContent}>
-                  Your buy request for <strong>{tradeQuantity} {selectedCrop.unit}s</strong> of <strong>{selectedCrop.name}</strong> has been secured in escrow. A contract draft has been sent to the farmer at <strong>{selectedCrop.mandi}</strong>.
-                </div>
-                <div className={styles.modalActions} style={{ justifyContent: "center" }}>
-                  <button type="button" className={styles.btnPrimary} onClick={handleCloseTrade}>
-                    Return to Catalog
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+              </DialogContent>
+
+              <DialogActions className="p-4 pt-2">
+                <Button onClick={handleCloseTrade} color="inherit" sx={{ textTransform: "none", fontWeight: 600 }}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="contained" color="primary" sx={{ textTransform: "none", fontWeight: 600, color: "#fff" }}>
+                  Confirm Escrow Trade
+                </Button>
+              </DialogActions>
+            </form>
+          ) : (
+            <div className="text-center p-6 flex flex-col items-center gap-4">
+              <div className="text-5xl">🎉</div>
+              <DialogTitle className="text-xl font-bold font-outfit text-brand-primary p-0">
+                Trade Initiated Successfully!
+              </DialogTitle>
+              <DialogContent className="p-0 text-sm text-brand-text-secondary leading-relaxed">
+                Your buy request for <strong>{tradeQuantity} {selectedCrop.unit}s</strong> of <strong>{selectedCrop.name}</strong> has been secured in escrow. A contract draft has been sent to the farmer at <strong>{selectedCrop.mandi}</strong>.
+              </DialogContent>
+              <DialogActions className="w-full justify-center p-0 pt-4">
+                <Button onClick={handleCloseTrade} variant="contained" color="primary" sx={{ textTransform: "none", fontWeight: 600, color: "#fff", px: 4 }}>
+                  Return to Catalog
+                </Button>
+              </DialogActions>
+            </div>
+          )}
+        </Dialog>
       )}
     </div>
   );
