@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Button, Slider } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Button } from "@mui/material";
 
 interface Shipment {
   id: string;
@@ -226,6 +225,7 @@ export default function MerchantDashboard() {
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [isPicModalOpen, setIsPicModalOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   // Form states
   const [bankNameForm, setBankNameForm] = useState("");
@@ -325,11 +325,66 @@ export default function MerchantDashboard() {
           <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary text-sm text-white font-sans p-1">🌾</span>
           <span>Krishi Bazar</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 relative">
           <span className="text-xs font-bold bg-amber-500/15 text-[#d97706] py-1 px-3 rounded-full uppercase tracking-wider">Merchant Pro</span>
           <Button component={Link} href="/" variant="outlined" size="small" sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600 }}>
             Catalog View
           </Button>
+
+          {/* Profile Dropdown */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 text-white border border-brand-border-light flex items-center justify-center text-lg font-bold shadow-md cursor-pointer hover:scale-105 transition-all"
+            >
+              {profilePic || "🏢"}
+            </button>
+            
+            {isProfileMenuOpen && (
+              <>
+                {/* Click outside backdrop */}
+                <div className="fixed inset-0 z-40" onClick={() => setIsProfileMenuOpen(false)} />
+                <div className="absolute right-0 mt-2.5 w-60 bg-white border border-gray-150 rounded-2xl p-4 shadow-xl z-50 flex flex-col gap-3.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                    <span className="text-2xl">{profilePic || "🏢"}</span>
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-extrabold text-xs text-gray-800 truncate">Sharma Agro Traders</span>
+                      <span className="text-[10px] text-gray-500 font-semibold truncate">{merchantId}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2.5 text-xs text-gray-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-500">Status</span>
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isProfileComplete ? "bg-green-50 text-green-600 border border-green-100" : "bg-gray-50 text-gray-500 border border-gray-200"}`}>
+                        {isProfileComplete ? "Verified" : "Unverified"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-500">Bank Linked</span>
+                      <span className="font-semibold">{bankDetails ? "Yes" : "No"}</span>
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-100 pt-2.5 flex flex-col gap-1.5">
+                    <button 
+                      onClick={() => { setIsProfileMenuOpen(false); if (!bankDetails) setIsBankModalOpen(true); }}
+                      className="text-left w-full text-xs font-semibold text-[#1aa35a] hover:underline"
+                    >
+                      {bankDetails ? "Modify Bank Account" : "Link Bank Account"}
+                    </button>
+                    <button 
+                      onClick={() => { setIsProfileMenuOpen(false); setIsPicModalOpen(true); }}
+                      className="text-left w-full text-xs font-semibold text-[#1aa35a] hover:underline"
+                    >
+                      Change Avatar
+                    </button>
+                    <Link href="/" className="text-left w-full text-xs font-semibold text-red-500 hover:underline">
+                      Log Out
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </nav>
 

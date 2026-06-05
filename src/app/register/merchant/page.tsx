@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   Button, 
@@ -11,6 +11,29 @@ import {
 } from "@mui/material";
 import { ArrowBackIcon, GoogleIcon } from "@/icons";
 import { useSharedGoogleLogin } from "@/hooks/useSharedGoogleLogin";
+
+const FALLBACK_STATES_DATA = [
+  {
+    state: "Madhya Pradesh",
+    districts: ["Indore", "Bhopal", "Gwalior", "Jabalpur", "Ujjain", "Dhar", "Dewas"]
+  },
+  {
+    state: "Punjab",
+    districts: ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Gurdaspur"]
+  },
+  {
+    state: "Rajasthan",
+    districts: ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner", "Ajmer", "Alwar"]
+  },
+  {
+    state: "Uttar Pradesh",
+    districts: ["Lucknow", "Kanpur", "Varanasi", "Agra", "Meerut", "Noida", "Ghaziabad"]
+  },
+  {
+    state: "Maharashtra",
+    districts: ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Aurangabad", "Solapur"]
+  }
+];
 
 interface FormState {
   fullName: string;
@@ -52,6 +75,24 @@ export default function MerchantRegistrationPage() {
   const [googleDistrict, setGoogleDistrict] = useState("");
   const [googleErrors, setGoogleErrors] = useState<{ state?: string; district?: string }>({});
 
+  const [locationsData, setLocationsData] = useState<{ state: string; districts: string[] }[]>(FALLBACK_STATES_DATA);
+
+  useEffect(() => {
+    fetch("https://raw.githubusercontent.com/sab99r/Indian-States-And-Districts/master/states-and-districts.json")
+      .then((res) => {
+        if (!res.ok) throw new Error("API call failed");
+        return res.json();
+      })
+      .then((data) => {
+        if (data && Array.isArray(data.states)) {
+          setLocationsData(data.states);
+        }
+      })
+      .catch(() => {
+        // Safe silent fallback to local mock data
+      });
+  }, []);
+
   const googleLogin = useSharedGoogleLogin({
     onLoginSuccess: (userInfo) => {
       setGoogleUserInfo(userInfo);
@@ -86,8 +127,13 @@ export default function MerchantRegistrationPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | any) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+    if (name === "state") {
+      setForm((prev) => ({ ...prev, state: value, district: "" }));
+      setErrors((prev) => ({ ...prev, state: "", district: "" }));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const validateForm = (): boolean => {
@@ -266,16 +312,17 @@ export default function MerchantRegistrationPage() {
                           value={googleState}
                           onChange={(e) => {
                             setGoogleState(e.target.value);
-                            setGoogleErrors((prev) => ({ ...prev, state: "" }));
+                            setGoogleDistrict("");
+                            setGoogleErrors((prev) => ({ ...prev, state: "", district: "" }));
                           }}
                           displayEmpty
                           renderValue={(val) => val || <span className="text-gray-400">Select State</span>}
                         >
-                          <MenuItem value="Madhya Pradesh">Madhya Pradesh</MenuItem>
-                          <MenuItem value="Punjab">Punjab</MenuItem>
-                          <MenuItem value="Rajasthan">Rajasthan</MenuItem>
-                          <MenuItem value="Uttar Pradesh">Uttar Pradesh</MenuItem>
-                          <MenuItem value="Maharashtra">Maharashtra</MenuItem>
+                          {locationsData.map((item) => (
+                            <MenuItem key={item.state} value={item.state}>
+                              {item.state}
+                            </MenuItem>
+                          ))}
                         </Select>
                         {googleErrors.state && <p className="text-red-500 text-[10px] mt-1 font-semibold">{googleErrors.state}</p>}
                       </FormControl>
@@ -283,20 +330,27 @@ export default function MerchantRegistrationPage() {
 
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="googleDistrict">District</label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        id="googleDistrict"
-                        placeholder="e.g. Indore"
-                        value={googleDistrict}
-                        onChange={(e) => {
-                          setGoogleDistrict(e.target.value);
-                          setGoogleErrors((prev) => ({ ...prev, district: "" }));
-                        }}
-                        error={!!googleErrors.district}
-                        helperText={googleErrors.district}
-                        sx={muiWizardInputStyle}
-                      />
+                      <FormControl fullWidth size="small" error={!!googleErrors.district} sx={muiWizardInputStyle}>
+                        <Select
+                          id="googleDistrict"
+                          value={googleDistrict}
+                          onChange={(e) => {
+                            setGoogleDistrict(e.target.value);
+                            setGoogleErrors((prev) => ({ ...prev, district: "" }));
+                          }}
+                          displayEmpty
+                          disabled={!googleState}
+                          renderValue={(val) => val || <span className="text-gray-400">Select District</span>}
+                        >
+                          {googleState &&
+                            (locationsData.find((item) => item.state === googleState)?.districts || []).map((dist) => (
+                              <MenuItem key={dist} value={dist}>
+                                {dist}
+                              </MenuItem>
+                            ))}
+                        </Select>
+                        {googleErrors.district && <p className="text-red-500 text-[10px] mt-1 font-semibold">{googleErrors.district}</p>}
+                      </FormControl>
                     </div>
 
                     <div className="flex gap-2.5 mt-2">
@@ -601,11 +655,11 @@ export default function MerchantRegistrationPage() {
                         displayEmpty
                         renderValue={(val) => val || <span className="text-gray-400">State</span>}
                       >
-                        <MenuItem value="Madhya Pradesh">Madhya Pradesh</MenuItem>
-                        <MenuItem value="Punjab">Punjab</MenuItem>
-                        <MenuItem value="Rajasthan">Rajasthan</MenuItem>
-                        <MenuItem value="Uttar Pradesh">Uttar Pradesh</MenuItem>
-                        <MenuItem value="Maharashtra">Maharashtra</MenuItem>
+                        {locationsData.map((item) => (
+                          <MenuItem key={item.state} value={item.state}>
+                            {item.state}
+                          </MenuItem>
+                        ))}
                       </Select>
                       {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
                     </FormControl>
@@ -613,18 +667,25 @@ export default function MerchantRegistrationPage() {
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="district">District</label>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      id="district"
-                      name="district"
-                      placeholder="e.g. Indore"
-                      value={form.district}
-                      onChange={handleChange}
-                      error={!!errors.district}
-                      helperText={errors.district}
-                      sx={muiWizardInputStyle}
-                    />
+                    <FormControl fullWidth size="small" error={!!errors.district} sx={muiWizardInputStyle}>
+                      <Select
+                        id="district"
+                        name="district"
+                        value={form.district}
+                        onChange={handleChange}
+                        displayEmpty
+                        disabled={!form.state}
+                        renderValue={(val) => val || <span className="text-gray-400">District</span>}
+                      >
+                        {form.state &&
+                          (locationsData.find((item) => item.state === form.state)?.districts || []).map((dist) => (
+                            <MenuItem key={dist} value={dist}>
+                              {dist}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                      {errors.district && <p className="text-red-500 text-xs mt-1">{errors.district}</p>}
+                    </FormControl>
                   </div>
                 </div>
 
