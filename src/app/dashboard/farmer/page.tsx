@@ -55,6 +55,7 @@ export default function FarmerDashboard() {
   const [bankNameForm, setBankNameForm] = useState("");
   const [accountNumForm, setAccountNumForm] = useState("");
   const [ifscForm, setIfscForm] = useState("");
+  const [bankFormErrors, setBankFormErrors] = useState<{ bankName?: string; accountNum?: string; ifsc?: string }>({});
 
   const handleAcceptBid = (bidId: string) => {
     dispatch(acceptBid(bidId));
@@ -68,13 +69,18 @@ export default function FarmerDashboard() {
 
   const handleBankSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (accountNumForm.length < 9 || ifscForm.length < 4) {
-      alert("Please enter valid account and IFSC details.");
+    const errs: { bankName?: string; accountNum?: string; ifsc?: string } = {};
+    if (!bankNameForm.trim()) errs.bankName = "Bank name is required.";
+    if (!/^\d{9,18}$/.test(accountNumForm.trim())) errs.accountNum = "Enter a valid account number (9–18 digits).";
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifscForm.trim().toUpperCase())) errs.ifsc = "Enter a valid IFSC code (e.g. SBIN0001234).";
+    if (Object.keys(errs).length > 0) {
+      setBankFormErrors(errs);
       return;
     }
-    dispatch(updateFarmerBank({ bankName: bankNameForm, accountNum: accountNumForm, ifsc: ifscForm }));
+    setBankFormErrors({});
+    dispatch(updateFarmerBank({ bankName: bankNameForm.trim(), accountNum: accountNumForm.trim(), ifsc: ifscForm.trim().toUpperCase() }));
     setIsBankModalOpen(false);
-    alert("Bank details linked successfully!");
+    setBankNameForm(""); setAccountNumForm(""); setIfscForm("");
   };
 
   const handleAvatarSelect = (avatarEmoji: string) => {
@@ -459,38 +465,38 @@ export default function FarmerDashboard() {
             </div>
             
             <form onSubmit={handleBankSubmit} className="flex flex-col gap-4 text-xs font-semibold text-gray-600">
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1">
                 <label>Bank Name</label>
                 <input
-                  required
                   type="text"
                   placeholder="e.g. State Bank of India"
                   value={bankNameForm}
-                  onChange={(e) => setBankNameForm(e.target.value)}
-                  className="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#1aa35a] font-bold bg-gray-50 text-gray-850"
+                  onChange={(e) => { setBankNameForm(e.target.value); setBankFormErrors((p) => ({ ...p, bankName: "" })); }}
+                  className={`w-full text-xs p-3 rounded-xl border focus:outline-none font-bold bg-gray-50 text-gray-850 ${bankFormErrors.bankName ? "border-red-400" : "border-gray-200 focus:border-[#1aa35a]"}`}
                 />
+                {bankFormErrors.bankName && <p className="text-red-500 text-[10px] font-semibold mt-0.5">{bankFormErrors.bankName}</p>}
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1">
                 <label>Account Number</label>
                 <input
-                  required
                   type="password"
                   placeholder="••••••••••••"
                   value={accountNumForm}
-                  onChange={(e) => setAccountNumForm(e.target.value)}
-                  className="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#1aa35a] font-bold bg-gray-50 text-gray-850"
+                  onChange={(e) => { setAccountNumForm(e.target.value); setBankFormErrors((p) => ({ ...p, accountNum: "" })); }}
+                  className={`w-full text-xs p-3 rounded-xl border focus:outline-none font-bold bg-gray-50 text-gray-850 ${bankFormErrors.accountNum ? "border-red-400" : "border-gray-200 focus:border-[#1aa35a]"}`}
                 />
+                {bankFormErrors.accountNum && <p className="text-red-500 text-[10px] font-semibold mt-0.5">{bankFormErrors.accountNum}</p>}
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1">
                 <label>IFSC Code</label>
                 <input
-                  required
                   type="text"
                   placeholder="e.g. SBIN0001925"
                   value={ifscForm}
-                  onChange={(e) => setIfscForm(e.target.value.toUpperCase())}
-                  className="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#1aa35a] font-bold bg-gray-50 text-gray-850"
+                  onChange={(e) => { setIfscForm(e.target.value.toUpperCase()); setBankFormErrors((p) => ({ ...p, ifsc: "" })); }}
+                  className={`w-full text-xs p-3 rounded-xl border focus:outline-none font-bold bg-gray-50 text-gray-850 ${bankFormErrors.ifsc ? "border-red-400" : "border-gray-200 focus:border-[#1aa35a]"}`}
                 />
+                {bankFormErrors.ifsc && <p className="text-red-500 text-[10px] font-semibold mt-0.5">{bankFormErrors.ifsc}</p>}
               </div>
               
               <div className="flex gap-3 mt-2">
