@@ -221,6 +221,37 @@ export default function MerchantDashboard() {
   const [selectedListing, setSelectedListing] = useState<FarmerListing | null>(null);
   const [procureQuantity, setProcureQuantity] = useState<number>(50);
 
+  // Profile completion states
+  const [bankDetails, setBankDetails] = useState<{ accountNum: string; ifsc: string; bankName: string } | null>(null);
+  const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [isBankModalOpen, setIsBankModalOpen] = useState(false);
+  const [isPicModalOpen, setIsPicModalOpen] = useState(false);
+
+  // Form states
+  const [bankNameForm, setBankNameForm] = useState("");
+  const [accountNumForm, setAccountNumForm] = useState("");
+  const [ifscForm, setIfscForm] = useState("");
+
+  const handleBankSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (accountNumForm.length < 9 || ifscForm.length < 4) {
+      alert("Please enter valid account and IFSC details.");
+      return;
+    }
+    setBankDetails({ bankName: bankNameForm, accountNum: accountNumForm, ifsc: ifscForm });
+    setIsBankModalOpen(false);
+    alert("Bank details linked successfully!");
+  };
+
+  const handleAvatarSelect = (avatarEmoji: string) => {
+    setProfilePic(avatarEmoji);
+    setIsPicModalOpen(false);
+    alert("Profile picture updated!");
+  };
+
+  const profileProgress = 60 + (profilePic ? 20 : 0) + (bankDetails ? 20 : 0);
+  const isProfileComplete = profileProgress === 100;
+
   // Filters logic
   const filteredListings = farmerListings.filter((listing) => {
     const matchesSearch =
@@ -498,6 +529,71 @@ export default function MerchantDashboard() {
         {/* Right Section: Buyer Pass & Quick Mandate Form */}
         <div className="lg:col-span-4 flex flex-col gap-8">
           
+          {/* Profile Progress Card */}
+          <div className="bg-white border border-brand-border-light rounded-2xl p-6 shadow-md flex flex-col gap-4">
+            <h2 className="text-sm font-bold text-gray-800 font-outfit">Verification Progress</h2>
+            
+            <div className="flex flex-col gap-2.5">
+              <div className="flex justify-between items-center text-xs font-bold">
+                <span className="text-gray-500">Profile Progress</span>
+                <span className={isProfileComplete ? "text-green-600" : "text-[#d97706]"}>{profileProgress}%</span>
+              </div>
+              <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-500 ${isProfileComplete ? "bg-green-600" : "bg-[#d97706]"}`}
+                  style={{ width: `${profileProgress}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 text-xs mt-1 border-t border-gray-100 pt-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium flex items-center gap-1.5">
+                  <span className="text-green-600 font-bold">✓</span> Basic Details
+                </span>
+                <span className="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-100">Filled</span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium flex items-center gap-1.5">
+                  <span className={profilePic ? "text-green-600 font-bold" : "text-gray-300"}>{profilePic ? "✓" : "○"}</span> Profile Avatar
+                </span>
+                {profilePic ? (
+                  <span className="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-100">Uploaded</span>
+                ) : (
+                  <button 
+                    onClick={() => setIsPicModalOpen(true)}
+                    className="text-[10px] text-brand-primary hover:underline font-bold bg-emerald-50 hover:bg-emerald-100/50 px-2.5 py-1 rounded border border-emerald-100/50 transition-all cursor-pointer"
+                  >
+                    Add Avatar
+                  </button>
+                )}
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium flex items-center gap-1.5">
+                  <span className={bankDetails ? "text-green-600 font-bold" : "text-gray-300"}>{bankDetails ? "✓" : "○"}</span> Bank Account Details
+                </span>
+                {bankDetails ? (
+                  <span className="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-100">Linked</span>
+                ) : (
+                  <button 
+                    onClick={() => setIsBankModalOpen(true)}
+                    className="text-[10px] text-brand-primary hover:underline font-bold bg-emerald-50 hover:bg-emerald-100/50 px-2.5 py-1 rounded border border-emerald-100/50 transition-all cursor-pointer"
+                  >
+                    Link Bank
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {!isProfileComplete && (
+              <p className="text-[10px] text-brand-text-muted mt-0.5">
+                ⚠ Link your bank account and upload a profile picture to earn the verified badge.
+              </p>
+            )}
+          </div>
+
           {/* Virtual Buyer Pass Preview */}
           <div className="bg-white border border-brand-border-light rounded-2xl p-6 shadow-md flex flex-col gap-4">
             <h2 className="text-sm font-bold text-gray-800 font-outfit">Virtual Sourcing Pass</h2>
@@ -507,23 +603,35 @@ export default function MerchantDashboard() {
                 <span className="flex items-center gap-1.5 font-bold font-outfit text-white text-xs">
                   🌾 Buyer Pass
                 </span>
-                <span className="text-[7px] font-bold bg-[#f59e0b] text-white p-0.5 px-2 rounded">
-                  VERIFIED BUYER
-                </span>
+                {isProfileComplete ? (
+                  <span className="text-[7px] font-bold bg-[#d97706] text-white p-0.5 px-2 rounded shadow-[0_0_8px_rgba(217,119,6,0.4)] uppercase tracking-wider">
+                    VERIFIED BUYER
+                  </span>
+                ) : (
+                  <span className="text-[7px] font-bold bg-gray-500/80 text-gray-100 p-0.5 px-2 rounded uppercase tracking-wider">
+                    PENDING VERIFY
+                  </span>
+                )}
               </div>
               
-              <div className="flex flex-col gap-2 text-[10px] text-white">
-                <div className="flex flex-col">
-                  <span className="text-[7px] text-emerald-200 uppercase font-bold">Representative Name</span>
-                  <span className="font-bold">Sharma Agro Traders</span>
+              <div className="flex justify-between items-center gap-2">
+                <div className="flex flex-col gap-2 text-[10px] text-white flex-grow">
+                  <div className="flex flex-col">
+                    <span className="text-[7px] text-emerald-200 uppercase font-bold">Representative Name</span>
+                    <span className="font-bold">Sharma Agro Traders</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[7px] text-emerald-200 uppercase font-bold">Buyer ID</span>
+                    <span className="font-mono text-[9px]">{merchantId}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[7px] text-emerald-200 uppercase font-bold">Sourcing Region</span>
+                    <span>Indore, Madhya Pradesh</span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[7px] text-emerald-200 uppercase font-bold">Buyer ID</span>
-                  <span className="font-mono text-[9px]">{merchantId}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[7px] text-emerald-200 uppercase font-bold">Sourcing Region</span>
-                  <span>Indore, Madhya Pradesh</span>
+
+                <div className="shrink-0 flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 border border-white/10 shadow-inner text-3xl">
+                  {profilePic || "🏢"}
                 </div>
               </div>
             </div>
@@ -792,6 +900,115 @@ export default function MerchantDashboard() {
                 </form>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bank Details Link Modal */}
+      {isBankModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-all duration-300">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-2xl p-6 sm:p-8 w-full max-w-[420px] flex flex-col gap-5 relative text-gray-800 animate-in fade-in zoom-in-95">
+            <button
+              onClick={() => setIsBankModalOpen(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold transition-all border border-gray-200/50 cursor-pointer"
+            >
+              ✕
+            </button>
+            <div>
+              <h3 className="text-lg font-extrabold font-outfit text-gray-900">Link Bank Account</h3>
+              <p className="text-[11px] text-gray-500 mt-1">Needed for processing direct-to-merchant escrow transactions.</p>
+            </div>
+            
+            <form onSubmit={handleBankSubmit} className="flex flex-col gap-4 text-xs font-semibold text-gray-600">
+              <div className="flex flex-col gap-1.5">
+                <label>Bank Name</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. HDFC Bank"
+                  value={bankNameForm}
+                  onChange={(e) => setBankNameForm(e.target.value)}
+                  className="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#1aa35a] font-bold bg-gray-50 text-gray-850"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label>Account Number</label>
+                <input
+                  required
+                  type="password"
+                  placeholder="••••••••••••"
+                  value={accountNumForm}
+                  onChange={(e) => setAccountNumForm(e.target.value)}
+                  className="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#1aa35a] font-bold bg-gray-50 text-gray-850"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label>IFSC Code</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. HDFC0001925"
+                  value={ifscForm}
+                  onChange={(e) => setIfscForm(e.target.value.toUpperCase())}
+                  className="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#1aa35a] font-bold bg-gray-50 text-gray-850"
+                />
+              </div>
+              
+              <div className="flex gap-3 mt-2">
+                <Button
+                  onClick={() => setIsBankModalOpen(false)}
+                  variant="outlined"
+                  sx={{ flex: 1, textTransform: "none", borderRadius: "10px", fontWeight: 700 }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{ flex: 1, textTransform: "none", borderRadius: "10px", fontWeight: 700, backgroundColor: "#1aa35a", "&:hover": { backgroundColor: "#15803d" }, color: "#fff" }}
+                >
+                  Save Account
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Profile Avatar Selector Modal */}
+      {isPicModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-all duration-300">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-2xl p-6 sm:p-8 w-full max-w-[420px] flex flex-col gap-5 relative text-gray-800 animate-in fade-in zoom-in-95">
+            <button
+              onClick={() => setIsPicModalOpen(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold transition-all border border-gray-200/50 cursor-pointer"
+            >
+              ✕
+            </button>
+            <div>
+              <h3 className="text-lg font-extrabold font-outfit text-gray-900">Select Profile Avatar</h3>
+              <p className="text-[11px] text-gray-500 mt-1">Select an identity avatar representing your workspace profile.</p>
+            </div>
+            
+            <div className="grid grid-cols-4 gap-4 py-4 justify-items-center">
+              {["🏢", "💼", "🚛", "🤵🏽", "👩🏽‍💼", "👨🏽‍💼", "🏬", "💵"].map((avatar) => (
+                <button
+                  key={avatar}
+                  onClick={() => handleAvatarSelect(avatar)}
+                  className="w-16 h-16 rounded-2xl bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-[#1aa35a] flex items-center justify-center text-3xl shadow-sm transition-all hover:scale-110 cursor-pointer"
+                >
+                  {avatar}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              onClick={() => setIsPicModalOpen(false)}
+              variant="outlined"
+              sx={{ textTransform: "none", borderRadius: "10px", fontWeight: 700 }}
+            >
+              Close
+            </Button>
           </div>
         </div>
       )}
