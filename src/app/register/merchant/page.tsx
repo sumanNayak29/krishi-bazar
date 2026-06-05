@@ -9,46 +9,31 @@ import {
   MenuItem, 
   FormControl 
 } from "@mui/material";
-import { ArrowBackIcon, AddIcon, GoogleIcon } from "@/icons";
-
-interface MandiItem {
-  name: string;
-  state: string;
-}
+import { ArrowBackIcon, GoogleIcon } from "@/icons";
 
 interface FormState {
   fullName: string;
   phone: string;
   email: string;
-  companyName: string;
-  gstin: string;
-  buyerType: string;
-  sourcingCapacity: string;
-  mandis: MandiItem[];
-  accountNumber: string;
-  ifsc: string;
-  billingAddress: string;
+  state: string;
+  district: string;
+  password: string;
 }
 
 const initialFormState: FormState = {
   fullName: "",
   phone: "",
   email: "",
-  companyName: "",
-  gstin: "",
-  buyerType: "Wholesaler",
-  sourcingCapacity: "",
-  mandis: [],
-  accountNumber: "",
-  ifsc: "",
-  billingAddress: "",
+  state: "",
+  district: "",
+  password: "",
 };
 
 export default function MerchantRegistrationPage() {
-  const [isLoginMode, setIsLoginMode] = useState<boolean>(true); // Defaults directly to Login card
+  const [isLoginMode, setIsLoginMode] = useState<boolean>(true);
   const [isRegistered, setIsRegistered] = useState<boolean>(false);
   const [form, setForm] = useState<FormState>(initialFormState);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState | "mandi", string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   
   // Stable random card suffix for React 19 render purity
   const [cardIdSuffix] = useState(() => Math.floor(1000 + Math.random() * 9000));
@@ -59,40 +44,10 @@ export default function MerchantRegistrationPage() {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [loginErrors, setLoginErrors] = useState<Partial<Record<"email" | "password", string>>>({});
 
-  // Local state for adding mandis
-  const [newMandiName, setNewMandiName] = useState("");
-  const [newMandiState, setNewMandiState] = useState("");
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | any) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  const handleAddMandi = () => {
-    if (!newMandiName.trim()) {
-      setErrors((prev) => ({ ...prev, mandi: "Mandi name cannot be empty" }));
-      return;
-    }
-    if (!newMandiState.trim()) {
-      setErrors((prev) => ({ ...prev, mandi: "State selection is required" }));
-      return;
-    }
-
-    setForm((prev) => ({
-      ...prev,
-      mandis: [...prev.mandis, { name: newMandiName.trim(), state: newMandiState }],
-    }));
-    setNewMandiName("");
-    setNewMandiState("");
-    setErrors((prev) => ({ ...prev, mandi: "" }));
-  };
-
-  const handleRemoveMandi = (index: number) => {
-    setForm((prev) => ({
-      ...prev,
-      mandis: prev.mandis.filter((_, i) => i !== index),
-    }));
   };
 
   const validateForm = (): boolean => {
@@ -107,27 +62,14 @@ export default function MerchantRegistrationPage() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = "Enter a valid corporate email address.";
     }
-    if (form.companyName.trim().length < 3) {
-      newErrors.companyName = "Company name must be at least 3 characters long.";
+    if (!form.state.trim()) {
+      newErrors.state = "State selection is required.";
     }
-    if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9a-zA-Z]{1}$/.test(form.gstin.toUpperCase())) {
-      newErrors.gstin = "Enter a valid 15-character GSTIN format (e.g. 27AAAAA1111A1Z1).";
+    if (form.district.trim().length < 3) {
+      newErrors.district = "District name must be at least 3 characters.";
     }
-    const capacityNum = parseFloat(form.sourcingCapacity);
-    if (isNaN(capacityNum) || capacityNum <= 0) {
-      newErrors.sourcingCapacity = "Enter a valid monthly capacity in tons.";
-    }
-    if (form.mandis.length === 0) {
-      newErrors.mandis = "Please list at least one target sourcing mandi.";
-    }
-    if (!/^\d{9,18}$/.test(form.accountNumber)) {
-      newErrors.accountNumber = "Enter a valid bank account number (9 to 18 digits).";
-    }
-    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(form.ifsc.toUpperCase())) {
-      newErrors.ifsc = "Enter a valid 11-character IFSC code (e.g. SBIN0001234).";
-    }
-    if (form.billingAddress.trim().length < 5) {
-      newErrors.billingAddress = "Billing address must be at least 5 characters long.";
+    if (form.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters long.";
     }
 
     setErrors(newErrors);
@@ -180,10 +122,6 @@ export default function MerchantRegistrationPage() {
       fontWeight: 500,
       fontSize: "0.9rem",
       padding: "10px 16px",
-      "&::placeholder": {
-        color: "#9ca3af",
-        opacity: 1,
-      }
     },
     "& .MuiFormHelperText-root": {
       marginLeft: "12px",
@@ -211,7 +149,6 @@ export default function MerchantRegistrationPage() {
     }
   };
 
-  // Merchant ID format
   const merchantId = "KB-BUY-" + (form.phone ? form.phone.substring(6) : "5798") + "-" + cardIdSuffix;
 
   return (
@@ -443,287 +380,121 @@ export default function MerchantRegistrationPage() {
         {!isLoginMode && !isRegistered && (
           <>
             {/* Left Sourcing Form */}
-            <div className="w-full md:w-[54%] p-8 sm:p-12 md:pr-6 md:pl-12 flex flex-col gap-5 z-10 max-h-[650px] overflow-y-auto">
+            <div className="w-full md:w-[54%] p-8 sm:p-12 md:pr-6 md:pl-12 flex flex-col justify-center gap-5 z-10">
               <div>
-                <h2 className="text-2xl font-extrabold font-outfit mb-1 text-gray-800">Merchant Sourcing Registration</h2>
-                <p className="text-xs text-gray-500">Provide representative, company, sourcing APMCs, and payout details below.</p>
+                <h2 className="text-2xl font-extrabold font-outfit mb-1 text-gray-800">Merchant Registration</h2>
+                <p className="text-xs text-gray-500">Provide representative, location, and account details below.</p>
               </div>
 
-              <form onSubmit={handleRegisterSubmit} className="flex flex-col gap-6">
-                {/* 1. Representative Contact */}
-                <div className="flex flex-col gap-3">
-                  <div className="border-b border-gray-150 pb-1.5">
-                    <h3 className="text-xs font-bold text-[#1aa35a] uppercase tracking-wider">1. Representative Contact</h3>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="fullName">Representative Name</label>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      id="fullName"
-                      name="fullName"
-                      placeholder="e.g. Rajesh Sharma"
-                      value={form.fullName}
-                      onChange={handleChange}
-                      error={!!errors.fullName}
-                      helperText={errors.fullName}
-                      sx={muiWizardInputStyle}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="phone">Mobile Number</label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        id="phone"
-                        name="phone"
-                        placeholder="e.g. 9876543210"
-                        value={form.phone}
-                        onChange={handleChange}
-                        error={!!errors.phone}
-                        helperText={errors.phone}
-                        sx={muiWizardInputStyle}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="email">Corporate Email</label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="e.g. sourcing@sharmatraders.com"
-                        value={form.email}
-                        onChange={handleChange}
-                        error={!!errors.email}
-                        helperText={errors.email}
-                        sx={muiWizardInputStyle}
-                      />
-                    </div>
-                  </div>
+              <form onSubmit={handleRegisterSubmit} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="fullName">Full Name</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    id="fullName"
+                    name="fullName"
+                    placeholder="e.g. Rajesh Sharma"
+                    value={form.fullName}
+                    onChange={handleChange}
+                    error={!!errors.fullName}
+                    helperText={errors.fullName}
+                    sx={muiWizardInputStyle}
+                  />
                 </div>
 
-                {/* 2. Company Profile */}
-                <div className="flex flex-col gap-3">
-                  <div className="border-b border-gray-150 pb-1.5">
-                    <h3 className="text-xs font-bold text-[#1aa35a] uppercase tracking-wider">2. Company Profile</h3>
-                  </div>
-
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="companyName">Registered Company Name</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="email">Corporate Email</label>
                     <TextField
                       fullWidth
                       size="small"
-                      id="companyName"
-                      name="companyName"
-                      placeholder="e.g. Sharma Agro Traders Pvt Ltd"
-                      value={form.companyName}
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="e.g. sourcing@sharmatraders.com"
+                      value={form.email}
                       onChange={handleChange}
-                      error={!!errors.companyName}
-                      helperText={errors.companyName}
+                      error={!!errors.email}
+                      helperText={errors.email}
                       sx={muiWizardInputStyle}
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="gstin">GSTIN (GST Number)</label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        id="gstin"
-                        name="gstin"
-                        placeholder="e.g. 27AAAAA1111A1Z1"
-                        value={form.gstin}
-                        onChange={handleChange}
-                        error={!!errors.gstin}
-                        helperText={errors.gstin}
-                        slotProps={{ htmlInput: { style: { textTransform: "uppercase" } } }}
-                        sx={muiWizardInputStyle}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="buyerType">Business Type</label>
-                      <FormControl fullWidth size="small" sx={muiWizardInputStyle}>
-                        <Select
-                          id="buyerType"
-                          name="buyerType"
-                          value={form.buyerType}
-                          onChange={handleChange}
-                        >
-                          <MenuItem value="Wholesaler">Wholesaler</MenuItem>
-                          <MenuItem value="Exporter">Exporter</MenuItem>
-                          <MenuItem value="Processor">Processor / Mill</MenuItem>
-                          <MenuItem value="Retailer">Retailer Chain</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </div>
-                  </div>
-
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="sourcingCapacity">Sourcing Capacity (Tons/Month)</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="phone">Mobile Number</label>
                     <TextField
                       fullWidth
                       size="small"
-                      type="number"
-                      id="sourcingCapacity"
-                      name="sourcingCapacity"
-                      placeholder="e.g. 150"
-                      value={form.sourcingCapacity}
+                      id="phone"
+                      name="phone"
+                      placeholder="e.g. 9876543210"
+                      value={form.phone}
                       onChange={handleChange}
-                      error={!!errors.sourcingCapacity}
-                      helperText={errors.sourcingCapacity}
+                      error={!!errors.phone}
+                      helperText={errors.phone}
                       sx={muiWizardInputStyle}
                     />
                   </div>
                 </div>
 
-                {/* 3. Sourcing Preferences */}
-                <div className="flex flex-col gap-3">
-                  <div className="border-b border-gray-150 pb-1.5">
-                    <h3 className="text-xs font-bold text-[#1aa35a] uppercase tracking-wider">3. Target Sourcing Mandis</h3>
-                  </div>
-
-                  <div className="flex gap-2 items-end">
-                    <div className="flex-[1.5] flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Mandi Location</label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="e.g. Indore Mandi"
-                        value={newMandiName}
-                        onChange={(e) => setNewMandiName(e.target.value)}
-                        sx={muiWizardInputStyle}
-                      />
-                    </div>
-
-                    <div className="flex-[1] flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">State</label>
-                      <FormControl fullWidth size="small" sx={muiWizardInputStyle}>
-                        <Select
-                          value={newMandiState}
-                          onChange={(e) => setNewMandiState(e.target.value)}
-                          displayEmpty
-                          renderValue={(val) => val || <span className="text-gray-400">State</span>}
-                        >
-                          <MenuItem value="Madhya Pradesh">Madhya Pradesh</MenuItem>
-                          <MenuItem value="Punjab">Punjab</MenuItem>
-                          <MenuItem value="Rajasthan">Rajasthan</MenuItem>
-                          <MenuItem value="Uttar Pradesh">Uttar Pradesh</MenuItem>
-                          <MenuItem value="Maharashtra">Maharashtra</MenuItem>
-                          <MenuItem value="Andhra Pradesh">Andhra Pradesh</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </div>
-
-                    <Button 
-                      type="button"
-                      onClick={handleAddMandi} 
-                      variant="contained" 
-                      sx={{ 
-                        height: "40px", 
-                        minWidth: "40px", 
-                        borderRadius: "10px", 
-                        color: "#fff",
-                        backgroundColor: "#1aa35a",
-                        "&:hover": { backgroundColor: "#15803d" }
-                      }}
-                    >
-                      <AddIcon />
-                    </Button>
-                  </div>
-
-                  {errors.mandi && <p className="text-red-500 text-xs -mt-2">{errors.mandi}</p>}
-                  {errors.mandis && <p className="text-red-500 text-xs -mt-2">{errors.mandis}</p>}
-
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <div className="flex flex-wrap gap-2 p-3 rounded-xl border border-gray-200 bg-gray-50 min-h-[50px] items-center">
-                      {form.mandis.length > 0 ? (
-                        form.mandis.map((mandi, i) => (
-                          <span key={i} className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#1aa35a] bg-emerald-50 border border-emerald-100">
-                            📍 {mandi.name} ({mandi.state})
-                            <button type="button" onClick={() => handleRemoveMandi(i)} className="text-[#1aa35a] hover:text-red-500 font-bold ml-1 cursor-pointer">
-                              &times;
-                            </button>
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-[10px] text-gray-400 mx-auto">
-                          Add target sourcing mandis above. (At least 1 required)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4. Financial & Billing Details */}
-                <div className="flex flex-col gap-3">
-                  <div className="border-b border-gray-150 pb-1.5">
-                    <h3 className="text-xs font-bold text-[#1aa35a] uppercase tracking-wider">4. Financial & Billing</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="accountNumber">Corporate Bank Account</label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        type="password"
-                        id="accountNumber"
-                        name="accountNumber"
-                        placeholder="e.g. 918047582031"
-                        value={form.accountNumber}
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="state">State</label>
+                    <FormControl fullWidth size="small" error={!!errors.state} sx={muiWizardInputStyle}>
+                      <Select
+                        id="state"
+                        name="state"
+                        value={form.state}
                         onChange={handleChange}
-                        error={!!errors.accountNumber}
-                        helperText={errors.accountNumber}
-                        sx={muiWizardInputStyle}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="ifsc">Bank IFSC Code</label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        id="ifsc"
-                        name="ifsc"
-                        placeholder="e.g. HDFC0000124"
-                        value={form.ifsc}
-                        onChange={handleChange}
-                        error={!!errors.ifsc}
-                        helperText={errors.ifsc}
-                        slotProps={{ htmlInput: { style: { textTransform: "uppercase" } } }}
-                        sx={muiWizardInputStyle}
-                      />
-                    </div>
+                        displayEmpty
+                        renderValue={(val) => val || <span className="text-gray-400">State</span>}
+                      >
+                        <MenuItem value="Madhya Pradesh">Madhya Pradesh</MenuItem>
+                        <MenuItem value="Punjab">Punjab</MenuItem>
+                        <MenuItem value="Rajasthan">Rajasthan</MenuItem>
+                        <MenuItem value="Uttar Pradesh">Uttar Pradesh</MenuItem>
+                        <MenuItem value="Maharashtra">Maharashtra</MenuItem>
+                      </Select>
+                      {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
+                    </FormControl>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="billingAddress">Billing Address</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="district">District</label>
                     <TextField
                       fullWidth
                       size="small"
-                      multiline
-                      rows={1.5}
-                      id="billingAddress"
-                      name="billingAddress"
-                      placeholder="e.g. 42, Wholesaler Market Road, Mumbai"
-                      value={form.billingAddress}
+                      id="district"
+                      name="district"
+                      placeholder="e.g. Indore"
+                      value={form.district}
                       onChange={handleChange}
-                      error={!!errors.billingAddress}
-                      helperText={errors.billingAddress}
+                      error={!!errors.district}
+                      helperText={errors.district}
                       sx={muiWizardInputStyle}
                     />
                   </div>
                 </div>
 
-                <div className="flex gap-4 mt-6">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="password">Set Password</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="••••••••"
+                    value={form.password}
+                    onChange={handleChange}
+                    error={!!errors.password}
+                    helperText={errors.password}
+                    sx={muiWizardInputStyle}
+                  />
+                </div>
+
+                <div className="flex gap-4 mt-4">
                   <Button 
                     type="button"
                     onClick={() => setIsLoginMode(true)} 
@@ -806,16 +577,16 @@ export default function MerchantRegistrationPage() {
                 <div className="grid grid-cols-12 gap-2 items-center">
                   <div className="col-span-8 flex flex-col gap-2 text-[10px]">
                     <div className="flex flex-col">
-                      <span className="text-[7px] text-white/60 uppercase font-bold">Company</span>
-                      <span className="font-bold text-white truncate">{form.companyName}</span>
+                      <span className="text-[7px] text-white/60 uppercase font-bold">Merchant Name</span>
+                      <span className="font-bold text-white truncate">{form.fullName}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[7px] text-white/60 uppercase font-bold">Buyer ID</span>
                       <span className="font-bold text-white font-mono text-[9px]">{merchantId}</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[7px] text-white/60 uppercase font-bold">Capacity</span>
-                      <span className="font-bold text-white">{form.sourcingCapacity} Tons / Month</span>
+                      <span className="text-[7px] text-white/60 uppercase font-bold">Sourcing Region</span>
+                      <span className="font-bold text-white text-[9px]">{form.district}, {form.state}</span>
                     </div>
                   </div>
 

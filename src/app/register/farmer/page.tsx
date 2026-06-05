@@ -9,82 +9,45 @@ import {
   MenuItem, 
   FormControl 
 } from "@mui/material";
-import { ArrowBackIcon, AddIcon } from "@/icons";
-
-interface CropItem {
-  name: string;
-  acreage: number;
-}
+import { ArrowBackIcon, GoogleIcon } from "@/icons";
 
 interface FormState {
   fullName: string;
   phone: string;
-  lang: string;
+  email: string;
   state: string;
   district: string;
-  mandi: string;
-  crops: CropItem[];
-  accountNumber: string;
-  ifsc: string;
-  upi: string;
+  password: string;
 }
 
 const initialFormState: FormState = {
   fullName: "",
   phone: "",
-  lang: "Hindi",
+  email: "",
   state: "",
   district: "",
-  mandi: "",
-  crops: [],
-  accountNumber: "",
-  ifsc: "",
-  upi: "",
+  password: "",
 };
 
 export default function FarmerRegistrationPage() {
+  const [isLoginMode, setIsLoginMode] = useState<boolean>(true); // Defaults directly to Login card
   const [isRegistered, setIsRegistered] = useState<boolean>(false);
   const [form, setForm] = useState<FormState>(initialFormState);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState | "crop", string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   
   // Stable random card suffix for React 19 render purity
   const [cardIdSuffix] = useState(() => Math.floor(1000 + Math.random() * 9000));
   
-  // Local state for adding crops
-  const [newCropName, setNewCropName] = useState("");
-  const [newCropAcreage, setNewCropAcreage] = useState("");
+  // Login form states
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const [loginErrors, setLoginErrors] = useState<Partial<Record<"email" | "password", string>>>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | any) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  const handleAddCrop = () => {
-    if (!newCropName.trim()) {
-      setErrors((prev) => ({ ...prev, crop: "Crop name cannot be empty" }));
-      return;
-    }
-    const acreageNum = parseFloat(newCropAcreage);
-    if (isNaN(acreageNum) || acreageNum <= 0) {
-      setErrors((prev) => ({ ...prev, crop: "Enter a valid acreage (greater than 0)" }));
-      return;
-    }
-
-    setForm((prev) => ({
-      ...prev,
-      crops: [...prev.crops, { name: newCropName.trim(), acreage: acreageNum }],
-    }));
-    setNewCropName("");
-    setNewCropAcreage("");
-    setErrors((prev) => ({ ...prev, crop: "" }));
-  };
-
-  const handleRemoveCrop = (index: number) => {
-    setForm((prev) => ({
-      ...prev,
-      crops: prev.crops.filter((_, i) => i !== index),
-    }));
   };
 
   const validateForm = (): boolean => {
@@ -96,31 +59,78 @@ export default function FarmerRegistrationPage() {
     if (!/^\d{10}$/.test(form.phone)) {
       newErrors.phone = "Enter a valid 10-digit mobile number.";
     }
-    if (!form.state.trim()) newErrors.state = "State selection is required.";
-    if (!form.district.trim()) newErrors.district = "District name is required.";
-    if (!form.mandi.trim()) newErrors.mandi = "Mandi location is required.";
-    if (form.crops.length === 0) {
-      newErrors.crops = "Please add at least one crop to your agricultural portfolio.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = "Enter a valid email address.";
     }
-    if (!/^\d{9,18}$/.test(form.accountNumber)) {
-      newErrors.accountNumber = "Enter a valid bank account number (9 to 18 digits).";
+    if (!form.state.trim()) {
+      newErrors.state = "State selection is required.";
     }
-    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(form.ifsc.toUpperCase())) {
-      newErrors.ifsc = "Enter a valid 11-character IFSC code (e.g. SBIN0001234).";
+    if (form.district.trim().length < 3) {
+      newErrors.district = "District name must be at least 3 characters.";
+    }
+    if (form.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters long.";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
       setIsRegistered(true);
     }
   };
 
-  const muiTextFieldStyle = {
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newLoginErrors: Partial<Record<"email" | "password", string>> = {};
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail)) {
+      newLoginErrors.email = "Enter a valid email address.";
+    }
+    if (loginPassword.length < 6) {
+      newLoginErrors.password = "Password must be at least 6 characters long.";
+    }
+
+    setLoginErrors(newLoginErrors);
+    if (Object.keys(newLoginErrors).length === 0) {
+      setLoginSuccess(true);
+    }
+  };
+
+  const muiInputStyle = (hasError: boolean) => ({
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "9999px",
+      backgroundColor: "#f9fafb",
+      transition: "all 0.2s ease-in-out",
+      "& fieldset": { 
+        borderColor: hasError ? "#f87171" : "#d1d5db",
+        borderWidth: "1.5px"
+      },
+      "&:hover fieldset": { 
+        borderColor: hasError ? "#f87171" : "#9ca3af" 
+      },
+      "&.Mui-focused fieldset": { 
+        borderColor: hasError ? "#ef4444" : "#1aa35a",
+        borderWidth: "1.5px"
+      },
+    },
+    "& .MuiInputBase-input": {
+      color: "#1f2937",
+      fontWeight: 500,
+      fontSize: "0.9rem",
+      padding: "10px 16px",
+    },
+    "& .MuiFormHelperText-root": {
+      marginLeft: "12px",
+      fontSize: "0.75rem",
+      fontWeight: 500,
+    }
+  });
+
+  const muiWizardInputStyle = {
     "& .MuiOutlinedInput-root": {
       borderRadius: "12px",
       backgroundColor: "#f9fafb",
@@ -139,7 +149,6 @@ export default function FarmerRegistrationPage() {
     }
   };
 
-  // Farmer registration success ID
   const farmerId = "KB-2026-" + (form.phone ? form.phone.substring(6) : "4892") + "-" + cardIdSuffix;
 
   return (
@@ -153,26 +162,233 @@ export default function FarmerRegistrationPage() {
         <ArrowBackIcon sx={{ fontSize: 16 }} /> Back to Bazar Catalog
       </Link>
 
-      <div className="w-full max-w-[650px] bg-white border border-gray-200/80 rounded-[24px] shadow-2xl relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:w-full before:h-1 before:bg-gradient-to-r before:from-brand-primary before:to-brand-secondary z-10">
+      <div className="w-full max-w-[850px] bg-white border border-gray-200/80 rounded-[24px] shadow-2xl relative overflow-hidden flex flex-col md:flex-row min-h-[500px] z-10">
         
-        {/* ==================== FORM VIEW ==================== */}
-        {!isRegistered && (
-          <div className="p-8 sm:p-12 max-h-[700px] overflow-y-auto flex flex-col gap-6">
-            <div>
-              <h2 className="text-2xl font-extrabold font-outfit text-gray-800 mb-1">Farmer Registration</h2>
-              <p className="text-xs text-gray-500">Create your account for direct merchant trading in one step.</p>
+        {/* ==================== LOGIN VIEW ==================== */}
+        {isLoginMode && !loginSuccess && (
+          <>
+            {/* Left Welcome Panel (Green Triangle Overlay) */}
+            <div 
+              className="hidden md:flex absolute top-0 left-0 h-full w-[46%] bg-[#1aa35a] z-20 flex-col justify-center text-white"
+              style={{ clipPath: "polygon(0 0, 100% 0, 75% 100%, 0 100%)" }}
+            >
+              <div className="p-8 sm:p-12 flex flex-col gap-2">
+                <h2 className="text-4xl font-extrabold font-outfit mb-3 tracking-wide">Welcome!</h2>
+                <p className="text-sm font-medium leading-relaxed opacity-90">Create your account.</p>
+                <p className="text-sm font-medium leading-relaxed opacity-90">For Free!</p>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setIsLoginMode(false);
+                    setIsRegistered(false);
+                  }}
+                  className="mt-8 border-2 border-white text-white hover:bg-white hover:text-[#1aa35a] font-bold rounded-full px-8 py-2.5 transition-all duration-300 self-start cursor-pointer text-xs uppercase tracking-wider"
+                >
+                  Sign Up
+                </button>
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-              
-              {/* 1. Personal Profile */}
-              <div className="flex flex-col gap-3">
-                <div className="border-b border-gray-150 pb-1.5">
-                  <h3 className="text-xs font-bold text-[#1aa35a] uppercase tracking-wider">1. Profile Details</h3>
+            {/* Right Form Panel (White Background) */}
+            <div className="w-full md:w-[54%] md:ml-[46%] p-8 sm:p-12 md:pl-8 md:pr-16 flex flex-col justify-center gap-6 bg-white text-gray-800 z-10">
+              <div>
+                <h2 className="text-3xl font-extrabold text-gray-700 font-outfit mb-1">Login</h2>
+              </div>
+
+              <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="loginEmail">
+                    Username/Email address <span className="text-red-500">*</span>
+                  </label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    id="loginEmail"
+                    placeholder="Codewithrandom@gmail.com"
+                    value={loginEmail}
+                    onChange={(e) => {
+                      setLoginEmail(e.target.value);
+                      setLoginErrors((prev) => ({ ...prev, email: "" }));
+                    }}
+                    error={!!loginErrors.email}
+                    helperText={loginErrors.email}
+                    sx={muiInputStyle(!!loginErrors.email)}
+                    required
+                  />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="fullName">Full Name (as in Aadhaar/ID)</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="loginPassword">
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    id="loginPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={loginPassword}
+                    onChange={(e) => {
+                      setLoginPassword(e.target.value);
+                      setLoginErrors((prev) => ({ ...prev, password: "" }));
+                    }}
+                    error={!!loginErrors.password}
+                    helperText={loginErrors.password}
+                    sx={muiInputStyle(!!loginErrors.password)}
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-3 mt-2">
+                  <Button 
+                    type="submit" 
+                    variant="outlined" 
+                    fullWidth 
+                    sx={{ 
+                      textTransform: "none", 
+                      borderRadius: "9999px", 
+                      fontWeight: 700, 
+                      py: 1.2, 
+                      borderColor: "#1aa35a", 
+                      color: "#1aa35a",
+                      borderWidth: "1.5px",
+                      "&:hover": { 
+                        backgroundColor: "#1aa35a", 
+                        color: "#fff", 
+                        borderColor: "#1aa35a",
+                        borderWidth: "1.5px"
+                      } 
+                    }}
+                  >
+                    Sign In
+                  </Button>
+
+                  <div className="flex items-center my-0.5">
+                    <div className="flex-grow border-t border-gray-200"></div>
+                    <span className="flex-shrink mx-4 text-gray-400 text-[10px] font-bold uppercase tracking-wider">or</span>
+                    <div className="flex-grow border-t border-gray-200"></div>
+                  </div>
+
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => alert("Simulated Google authentication initiated.")}
+                    startIcon={
+                      <GoogleIcon />
+                    }
+                    sx={{
+                      textTransform: "none",
+                      borderRadius: "9999px",
+                      fontWeight: 600,
+                      py: 1.1,
+                      borderColor: "#d1d5db",
+                      color: "#374151",
+                      borderWidth: "1.5px",
+                      backgroundColor: "#fff",
+                      "&:hover": {
+                        backgroundColor: "#f9fafb",
+                        borderColor: "#9ca3af",
+                        borderWidth: "1.5px"
+                      }
+                    }}
+                  >
+                    Sign in with Google
+                  </Button>
+                  
+                  <div className="flex justify-between items-center mt-2">
+                    <span 
+                      onClick={() => alert("Simulated password recovery link clicked.")} 
+                      className="text-xs text-[#1aa35a] hover:underline cursor-pointer font-bold transition-all"
+                    >
+                      Forgot password?
+                    </span>
+                    
+                    <span 
+                      onClick={() => {
+                        setIsLoginMode(false);
+                        setIsRegistered(false);
+                      }} 
+                      className="md:hidden text-xs text-[#1aa35a] hover:underline cursor-pointer font-bold"
+                    >
+                      New user? Register account
+                    </span>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </>
+        )}
+
+        {/* Login Success Panel */}
+        {isLoginMode && loginSuccess && (
+          <div className="w-full p-8 sm:p-16 flex flex-col items-center text-center gap-6 bg-white text-gray-800">
+            <div className="text-5xl">🎉</div>
+            <div>
+              <h2 className="text-2xl font-extrabold font-outfit text-[#1aa35a] mb-1">Welcome Back!</h2>
+              <p className="text-sm text-gray-500">Authenticated as <span className="text-gray-900 font-semibold">{loginEmail}</span></p>
+            </div>
+            
+            <div className="p-5 rounded-2xl border border-gray-200 bg-gray-50 text-left w-full max-w-[360px] flex flex-col gap-2.5">
+              <div className="flex justify-between border-b border-gray-200 pb-2 mb-1">
+                <span className="text-xs text-gray-500 font-semibold">Account Type</span>
+                <span className="text-xs font-bold text-[#1aa35a]">FARMER PRO</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-xs text-gray-500 font-semibold">Farmer ID</span>
+                <span className="text-xs font-bold font-mono text-gray-800">KB-2026-4892-1925</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-xs text-gray-500 font-semibold">Status</span>
+                <span className="text-xs font-bold text-green-600 flex items-center gap-1">● Active Seller</span>
+              </div>
+            </div>
+
+            <div className="flex gap-4 w-full justify-center mt-2">
+              <Button 
+                onClick={() => {
+                  setLoginSuccess(false);
+                  setIsLoginMode(true);
+                  setLoginEmail("");
+                  setLoginPassword("");
+                }} 
+                variant="outlined" 
+                sx={{ textTransform: "none", borderRadius: "30px", fontWeight: 600, color: "gray", borderColor: "gray", px: 4 }}
+              >
+                Log Out
+              </Button>
+              <Button 
+                component={Link} 
+                href="/" 
+                variant="contained" 
+                sx={{ 
+                  textTransform: "none", 
+                  borderRadius: "30px", 
+                  fontWeight: 600, 
+                  backgroundColor: "#1aa35a", 
+                  color: "#fff",
+                  px: 4,
+                  "&:hover": { backgroundColor: "#15803d" }
+                }}
+              >
+                Enter Market
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== SIGN UP FORM ==================== */}
+        {!isLoginMode && !isRegistered && (
+          <>
+            {/* Left Sourcing Form */}
+            <div className="w-full md:w-[54%] p-8 sm:p-12 md:pr-6 md:pl-12 flex flex-col justify-center gap-5 z-10">
+              <div>
+                <h2 className="text-2xl font-extrabold font-outfit mb-1 text-gray-800">Farmer Registration</h2>
+                <p className="text-xs text-gray-500">Provide representative, location, and account details below.</p>
+              </div>
+
+              <form onSubmit={handleRegisterSubmit} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="fullName">Full Name</label>
                   <TextField
                     fullWidth
                     size="small"
@@ -183,11 +399,28 @@ export default function FarmerRegistrationPage() {
                     onChange={handleChange}
                     error={!!errors.fullName}
                     helperText={errors.fullName}
-                    sx={muiTextFieldStyle}
+                    sx={muiWizardInputStyle}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="email">Email Address</label>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="e.g. rajesh@gmail.com"
+                      value={form.email}
+                      onChange={handleChange}
+                      error={!!errors.email}
+                      helperText={errors.email}
+                      sx={muiWizardInputStyle}
+                    />
+                  </div>
+
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="phone">Mobile Number</label>
                     <TextField
@@ -200,58 +433,33 @@ export default function FarmerRegistrationPage() {
                       onChange={handleChange}
                       error={!!errors.phone}
                       helperText={errors.phone}
-                      sx={muiTextFieldStyle}
+                      sx={muiWizardInputStyle}
                     />
                   </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="lang">Preferred Language</label>
-                    <FormControl fullWidth size="small" sx={muiTextFieldStyle}>
-                      <Select
-                        id="lang"
-                        name="lang"
-                        value={form.lang}
-                        onChange={handleChange}
-                      >
-                        <MenuItem value="Hindi">हिन्दी (Hindi)</MenuItem>
-                        <MenuItem value="English">English</MenuItem>
-                        <MenuItem value="Marathi">मరాठी (Marathi)</MenuItem>
-                        <MenuItem value="Punjabi">ਪੰਜਾਬੀ (Punjabi)</MenuItem>
-                        <MenuItem value="Telugu">తెలుగు (Telugu)</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </div>
-                </div>
-              </div>
-
-              {/* 2. Farm Location */}
-              <div className="flex flex-col gap-3">
-                <div className="border-b border-gray-150 pb-1.5">
-                  <h3 className="text-xs font-bold text-[#1aa35a] uppercase tracking-wider">2. Farm Location</h3>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="state">State</label>
-                  <FormControl fullWidth size="small" error={!!errors.state} sx={muiTextFieldStyle}>
-                    <Select
-                      id="state"
-                      name="state"
-                      value={form.state}
-                      onChange={handleChange}
-                      displayEmpty
-                      renderValue={(val) => val || <span className="text-gray-400">Select Sourcing State</span>}
-                    >
-                      <MenuItem value="Madhya Pradesh">Madhya Pradesh</MenuItem>
-                      <MenuItem value="Punjab">Punjab</MenuItem>
-                      <MenuItem value="Rajasthan">Rajasthan</MenuItem>
-                      <MenuItem value="Uttar Pradesh">Uttar Pradesh</MenuItem>
-                      <MenuItem value="Maharashtra">Maharashtra</MenuItem>
-                    </Select>
-                    {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
-                  </FormControl>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="state">State</label>
+                    <FormControl fullWidth size="small" error={!!errors.state} sx={muiWizardInputStyle}>
+                      <Select
+                        id="state"
+                        name="state"
+                        value={form.state}
+                        onChange={handleChange}
+                        displayEmpty
+                        renderValue={(val) => val || <span className="text-gray-400">State</span>}
+                      >
+                        <MenuItem value="Madhya Pradesh">Madhya Pradesh</MenuItem>
+                        <MenuItem value="Punjab">Punjab</MenuItem>
+                        <MenuItem value="Rajasthan">Rajasthan</MenuItem>
+                        <MenuItem value="Uttar Pradesh">Uttar Pradesh</MenuItem>
+                        <MenuItem value="Maharashtra">Maharashtra</MenuItem>
+                      </Select>
+                      {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
+                    </FormControl>
+                  </div>
+
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="district">District</label>
                     <TextField
@@ -264,253 +472,138 @@ export default function FarmerRegistrationPage() {
                       onChange={handleChange}
                       error={!!errors.district}
                       helperText={errors.district}
-                      sx={muiTextFieldStyle}
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="mandi">Target APMC Mandi</label>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      id="mandi"
-                      name="mandi"
-                      placeholder="e.g. Indore APMC Sanyogitaganj"
-                      value={form.mandi}
-                      onChange={handleChange}
-                      error={!!errors.mandi}
-                      helperText={errors.mandi}
-                      sx={muiTextFieldStyle}
+                      sx={muiWizardInputStyle}
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* 3. Crop details */}
-              <div className="flex flex-col gap-3">
-                <div className="border-b border-gray-150 pb-1.5">
-                  <h3 className="text-xs font-bold text-[#1aa35a] uppercase tracking-wider">3. Crop Portfolio</h3>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="password">Set Password</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="••••••••"
+                    value={form.password}
+                    onChange={handleChange}
+                    error={!!errors.password}
+                    helperText={errors.password}
+                    sx={muiWizardInputStyle}
+                  />
                 </div>
 
-                <div className="flex gap-2 items-end">
-                  <div className="flex-[1.5] flex flex-col gap-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Crop Name</label>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      placeholder="e.g. Sharbati Wheat"
-                      value={newCropName}
-                      onChange={(e) => setNewCropName(e.target.value)}
-                      sx={muiTextFieldStyle}
-                    />
-                  </div>
-
-                  <div className="flex-[1] flex flex-col gap-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Acreage (Acres)</label>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      type="number"
-                      placeholder="e.g. 5"
-                      value={newCropAcreage}
-                      onChange={(e) => setNewCropAcreage(e.target.value)}
-                      sx={muiTextFieldStyle}
-                    />
-                  </div>
-
+                <div className="flex gap-4 mt-4">
                   <Button 
                     type="button"
-                    onClick={handleAddCrop} 
-                    variant="contained" 
+                    onClick={() => setIsLoginMode(true)} 
+                    variant="outlined" 
+                    fullWidth
                     sx={{ 
-                      height: "40px", 
-                      minWidth: "40px", 
-                      borderRadius: "10px", 
-                      color: "#fff",
+                      textTransform: "none", 
+                      fontWeight: 600, 
+                      borderRadius: "20px", 
+                      color: "gray", 
+                      borderColor: "gray",
+                      "&:hover": { borderColor: "darkgray" }
+                    }}
+                  >
+                    Back to Sign In
+                  </Button>
+                  <Button 
+                    type="submit"
+                    variant="contained" 
+                    fullWidth
+                    sx={{ 
+                      textTransform: "none", 
+                      fontWeight: 600, 
+                      color: "#fff", 
+                      borderRadius: "20px", 
                       backgroundColor: "#1aa35a",
                       "&:hover": { backgroundColor: "#15803d" }
                     }}
                   >
-                    <AddIcon />
+                    Register Account
                   </Button>
                 </div>
-
-                {errors.crop && <p className="text-red-500 text-xs -mt-2">{errors.crop}</p>}
-                {errors.crops && <p className="text-red-500 text-xs -mt-2">{errors.crops}</p>}
-
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex flex-wrap gap-2 p-3 rounded-xl border border-gray-200 bg-gray-50 min-h-[50px] items-center">
-                    {form.crops.length > 0 ? (
-                      form.crops.map((crop, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#1aa35a] bg-emerald-50 border border-emerald-100">
-                          🌱 {crop.name} ({crop.acreage} Acres)
-                          <button type="button" onClick={() => handleRemoveCrop(i)} className="text-[#1aa35a] hover:text-red-500 font-bold ml-1 cursor-pointer">
-                            &times;
-                          </button>
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-[10px] text-gray-400 mx-auto">
-                        Add target crops above. (At least 1 required)
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* 4. Financial payout details */}
-              <div className="flex flex-col gap-3">
-                <div className="border-b border-gray-150 pb-1.5">
-                  <h3 className="text-xs font-bold text-[#1aa35a] uppercase tracking-wider">4. Payout Account</h3>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="accountNumber">Bank Account Number</label>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      type="password"
-                      id="accountNumber"
-                      name="accountNumber"
-                      placeholder="e.g. 5010048293910"
-                      value={form.accountNumber}
-                      onChange={handleChange}
-                      error={!!errors.accountNumber}
-                      helperText={errors.accountNumber}
-                      sx={muiTextFieldStyle}
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="ifsc">IFSC Code</label>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      id="ifsc"
-                      name="ifsc"
-                      placeholder="e.g. HDFC0000124"
-                      value={form.ifsc}
-                      onChange={handleChange}
-                      error={!!errors.ifsc}
-                      helperText={errors.ifsc}
-                      slotProps={{ htmlInput: { style: { textTransform: "uppercase" } } }}
-                      sx={muiTextFieldStyle}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="upi">UPI ID (Optional)</label>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    id="upi"
-                    name="upi"
-                    placeholder="e.g. name@upi"
-                    value={form.upi}
-                    onChange={handleChange}
-                    sx={muiTextFieldStyle}
-                  />
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{ 
-                  textTransform: "none", 
-                  fontWeight: 700, 
-                  py: 1.2,
-                  borderRadius: "20px", 
-                  color: "#fff",
-                  backgroundColor: "#1aa35a",
-                  "&:hover": { backgroundColor: "#15803d" }
-                }}
-              >
-                Register Account & Generate Krishi Card
-              </Button>
-            </form>
-          </div>
-        )}
-
-        {/* ==================== SUCCESS VIEW ==================== */}
-        {isRegistered && (
-          <div className="p-8 sm:p-12 flex flex-col items-center text-center gap-6 bg-white text-gray-800">
-            <div>
-              <div className="text-5xl mb-2">🎉</div>
-              <h2 className="text-2xl font-extrabold font-outfit text-[#1aa35a] mb-1">Registration Successful!</h2>
-              <p className="text-sm text-gray-500">Your digital agricultural account is active and verified.</p>
+              </form>
             </div>
 
-            <div className="w-full max-w-[440px] my-6 transition-all duration-500 [perspective:1000px]">
-              <div className="w-full bg-gradient-to-br from-[#1aa35a] to-[#0f5230] border-2 border-emerald-500/20 rounded-3xl p-6 sm:p-8 text-left relative overflow-hidden shadow-2xl hover:border-brand-primary hover:rotate-1 hover:scale-[1.01] transition-all duration-500">
-                <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-gradient-to-br from-white/10 to-transparent rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>
+            {/* Right Welcome Back Panel (Green Triangle Overlay) */}
+            <div 
+              className="hidden md:flex absolute top-0 right-0 h-full w-[46%] bg-[#1aa35a] z-20 flex-col justify-center text-white"
+              style={{ clipPath: "polygon(25% 0, 100% 0, 100% 100%, 0 100%)" }}
+            >
+              <div className="p-8 sm:p-12 flex flex-col gap-2 items-end text-right">
+                <h2 className="text-3xl font-extrabold font-outfit mb-3 tracking-wide">Welcome Back!</h2>
+                <p className="text-sm font-medium leading-relaxed opacity-90">Already have a sourcing account?</p>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setIsLoginMode(true);
+                    setLoginSuccess(false);
+                  }}
+                  className="mt-8 border-2 border-white text-white hover:bg-white hover:text-[#1aa35a] font-bold rounded-full px-8 py-2.5 transition-all duration-300 cursor-pointer text-xs uppercase tracking-wider"
+                >
+                  Sign In
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
-                <div className="flex justify-between items-center border-b border-white/10 pb-4 mb-6">
-                  <div className="flex items-center gap-1.5 font-extrabold font-outfit text-white text-base">
+        {/* ==================== REGISTRATION SUCCESS VIEW ==================== */}
+        {!isLoginMode && isRegistered && (
+          <div className="w-full p-8 sm:p-12 flex flex-col items-center text-center gap-4 py-8 bg-white text-gray-800">
+            <div>
+              <div className="text-4xl mb-1">🎉</div>
+              <h2 className="text-xl font-extrabold font-outfit text-[#1aa35a] mb-1">Registration Successful!</h2>
+              <p className="text-xs text-gray-500">Your virtual agricultural account is active and verified.</p>
+            </div>
+
+            <div className="w-full transition-all duration-500 [perspective:1000px] max-w-[380px]">
+              <div className="w-full bg-gradient-to-br from-[#1aa35a] to-[#0f5230] border border-emerald-500/30 rounded-2xl p-5 text-left relative overflow-hidden shadow-lg">
+                <div className="flex justify-between items-center border-b border-white/10 pb-2 mb-4">
+                  <div className="flex items-center gap-1.5 font-extrabold font-outfit text-white text-xs">
                     <span>🌾</span>
                     <span>Krishi Card</span>
                   </div>
-                  <span className="text-[9px] font-bold tracking-wider bg-[#d97706] text-white p-1 px-2.5 rounded shadow-[0_0_8px_rgba(217,119,6,0.4)]">
+                  <span className="text-[8px] font-bold bg-[#d97706] text-white p-0.5 px-2 rounded shadow-[0_0_8px_rgba(217,119,6,0.4)]">
                     VERIFIED FARMER
                   </span>
                 </div>
 
-                <div className="grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-8 flex flex-col gap-3">
+                <div className="grid grid-cols-12 gap-2 items-center">
+                  <div className="col-span-8 flex flex-col gap-2 text-[10px]">
                     <div className="flex flex-col">
-                      <span className="text-[9px] text-emerald-200 uppercase tracking-wider font-semibold">Name</span>
-                      <span className="text-sm font-bold text-white">{form.fullName}</span>
+                      <span className="text-[7px] text-white/60 uppercase font-bold">Farmer Name</span>
+                      <span className="font-bold text-white truncate">{form.fullName}</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[9px] text-emerald-200 uppercase tracking-wider font-semibold">Farmer ID</span>
-                      <span className="text-xs font-bold text-white font-mono">{farmerId}</span>
+                      <span className="text-[7px] text-white/60 uppercase font-bold">Farmer ID</span>
+                      <span className="font-bold text-white font-mono text-[9px]">{farmerId}</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[9px] text-emerald-200 uppercase tracking-wider font-semibold">Region</span>
-                      <span className="text-xs font-bold text-white">{form.district}, {form.state}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[9px] text-emerald-200 uppercase tracking-wider font-semibold">Preferred Mandi</span>
-                      <span className="text-xs font-bold text-white">{form.mandi}</span>
+                      <span className="text-[7px] text-white/60 uppercase font-bold">Region</span>
+                      <span className="font-bold text-white text-[9px]">{form.district}, {form.state}</span>
                     </div>
                   </div>
 
-                  <div className="col-span-4 flex flex-col items-center gap-4 justify-self-center">
-                    <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-emerald-900 to-emerald-950 border border-emerald-800 flex items-center justify-center text-4xl shadow-md">
+                  <div className="col-span-4 flex flex-col items-center gap-2 justify-self-center">
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-900 to-emerald-950 border border-white/10 flex items-center justify-center text-2xl shadow-md">
                       👨🏽‍🌾
-                    </div>
-                    
-                    {/* Mock QR Code in CSS */}
-                    <div className="w-14 h-14 bg-white rounded-md p-1.5 grid grid-cols-4 grid-rows-4 gap-1 opacity-90 shadow-md">
-                      <div className="bg-black rounded-sm"></div>
-                      <div className="bg-black rounded-sm"></div>
-                      <div className="bg-transparent"></div>
-                      <div className="bg-black rounded-sm"></div>
-                      <div className="bg-black rounded-sm"></div>
-                      <div className="bg-transparent"></div>
-                      <div className="bg-black rounded-sm"></div>
-                      <div className="bg-black rounded-sm"></div>
-                      <div className="bg-transparent"></div>
-                      <div className="bg-black rounded-sm"></div>
-                      <div className="bg-black rounded-sm"></div>
-                      <div className="bg-transparent"></div>
-                      <div className="bg-black rounded-sm"></div>
-                      <div className="bg-transparent"></div>
-                      <div className="bg-black rounded-sm"></div>
-                      <div className="bg-black rounded-sm"></div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-4 w-full justify-center">
+            <div className="flex gap-4 w-full justify-center mt-4">
               <Button
-                onClick={() => alert("Your virtual Krishi Card download is starting...")}
+                onClick={() => alert("Your virtual Krishi Card file is downloading...")}
                 variant="outlined"
-                sx={{ textTransform: "none", fontWeight: 600, borderRadius: "20px", px: 4, color: "gray", borderColor: "gray" }}
+                sx={{ textTransform: "none", fontWeight: 600, borderRadius: "20px", px: 3, py: 0.5, fontSize: "0.8rem", color: "gray", borderColor: "gray" }}
               >
                 Download Card
               </Button>
@@ -523,12 +616,14 @@ export default function FarmerRegistrationPage() {
                   fontWeight: 600, 
                   color: "#fff", 
                   borderRadius: "20px", 
-                  px: 4,
+                  px: 3, 
+                  py: 0.5, 
+                  fontSize: "0.8rem",
                   backgroundColor: "#1aa35a",
                   "&:hover": { backgroundColor: "#15803d" }
                 }}
               >
-                Go to Marketplace
+                Go to Catalog
               </Button>
             </div>
           </div>
