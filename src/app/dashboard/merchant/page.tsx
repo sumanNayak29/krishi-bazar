@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -232,6 +232,18 @@ export default function MerchantDashboard() {
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [isPicModalOpen, setIsPicModalOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isProfileMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isProfileMenuOpen]);
 
   // Form states
   const [bankNameForm, setBankNameForm] = useState("");
@@ -326,7 +338,7 @@ export default function MerchantDashboard() {
           </Button>
 
           {/* Profile Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={profileMenuRef}>
             <button 
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 text-white border border-brand-border-light flex items-center justify-center text-lg font-bold shadow-md cursor-pointer hover:scale-105 transition-all"
@@ -335,10 +347,7 @@ export default function MerchantDashboard() {
             </button>
             
             {isProfileMenuOpen && (
-              <>
-                {/* Click outside backdrop */}
-                <div className="fixed inset-0 z-40" onClick={() => setIsProfileMenuOpen(false)} />
-                <div className="absolute right-0 mt-2.5 w-60 bg-white border border-gray-150 rounded-2xl p-4 shadow-xl z-50 flex flex-col gap-3.5 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute right-0 mt-2.5 w-60 bg-white border border-gray-150 rounded-2xl p-4 shadow-xl z-50 flex flex-col gap-3.5 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
                     <span className="text-2xl">{profilePic || "🏢"}</span>
                     <div className="flex flex-col min-w-0">
@@ -376,7 +385,6 @@ export default function MerchantDashboard() {
                     </Link>
                   </div>
                 </div>
-              </>
             )}
           </div>
         </div>
