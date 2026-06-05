@@ -29,7 +29,19 @@ export interface FarmerListing {
   id: string;
   farmerName: string;
   cropName: string;
-  category: "Grains" | "Oilseeds" | "Pulses" | "Spices" | "Vegetables";
+  category:
+    | "Grains & Cereals"
+    | "Oilseeds"
+    | "Pulses & Legumes"
+    | "Spices & Condiments"
+    | "Vegetables"
+    | "Fruits"
+    | "Cash Crops"
+    | "Dairy & Livestock"
+    | "Herbs & Medicinal"
+    | "Nuts & Dry Fruits"
+    | "Flowers & Floriculture"
+    | "Fiber Crops";
   expectedPrice: number;
   availableQuantity: number;
   mandiSource: string;
@@ -70,7 +82,7 @@ const initialFarmerListings: FarmerListing[] = [
     id: "F1", 
     farmerName: "Rajesh Kumar", 
     cropName: "Premium Sharbati Wheat", 
-    category: "Grains", 
+    category: "Grains & Cereals", 
     expectedPrice: 2450, 
     availableQuantity: 250, 
     mandiSource: "Indore APMC", 
@@ -96,7 +108,7 @@ const initialFarmerListings: FarmerListing[] = [
     id: "F2", 
     farmerName: "Gurpreet Singh", 
     cropName: "Super Basmati Paddy", 
-    category: "Grains", 
+    category: "Grains & Cereals", 
     expectedPrice: 4120, 
     availableQuantity: 180, 
     mandiSource: "Karnal APMC", 
@@ -148,7 +160,7 @@ const initialFarmerListings: FarmerListing[] = [
     id: "F4", 
     farmerName: "Venkat Rao", 
     cropName: "Dry Guntur Chillies", 
-    category: "Spices", 
+    category: "Spices & Condiments", 
     expectedPrice: 8200, 
     availableQuantity: 80, 
     mandiSource: "Guntur APMC", 
@@ -174,7 +186,7 @@ const initialFarmerListings: FarmerListing[] = [
     id: "F5", 
     farmerName: "Vikram Patel", 
     cropName: "Kabuli Chana (Chickpeas)", 
-    category: "Pulses", 
+    category: "Pulses & Legumes", 
     expectedPrice: 5300, 
     availableQuantity: 150, 
     mandiSource: "Akola APMC", 
@@ -297,11 +309,25 @@ const marketSlice = createSlice({
       }
     },
     addFarmerListing(state, action: PayloadAction<Omit<FarmerListing, "farmerName" | "farmerProfile" | "productSpecs" | "imageEmoji" | "grade">>) {
+      const categoryEmojiMap: Record<string, string> = {
+        "Grains & Cereals": "🌾",
+        "Oilseeds": "🌻",
+        "Pulses & Legumes": "🫘",
+        "Spices & Condiments": "🌶️",
+        "Vegetables": "🥦",
+        "Fruits": "🍎",
+        "Cash Crops": "🏭",
+        "Dairy & Livestock": "🐄",
+        "Herbs & Medicinal": "🌿",
+        "Nuts & Dry Fruits": "🥜",
+        "Flowers & Floriculture": "🌸",
+        "Fiber Crops": "🧵",
+      };
       const newListing: FarmerListing = {
         ...action.payload,
         farmerName: "Rajesh Kumar",
         grade: "A+",
-        imageEmoji: "🌾",
+        imageEmoji: categoryEmojiMap[action.payload.category] ?? "🌾",
         farmerProfile: {
           age: 42,
           memberSince: "March 2021",

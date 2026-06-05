@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { acceptBid, rejectBid } from "@/store/marketSlice";
+import { acceptBid, rejectBid, addFarmerListing } from "@/store/marketSlice";
 import { updateFarmerBank, updateFarmerAvatar } from "@/store/userSlice";
 
 interface Listing {
@@ -50,7 +50,29 @@ export default function FarmerDashboard() {
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [isPicModalOpen, setIsPicModalOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isListingModalOpen, setIsListingModalOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // New listing form state
+  const [newCropName, setNewCropName] = useState("");
+  const [newCategory, setNewCategory] = useState<
+    | "Grains & Cereals"
+    | "Oilseeds"
+    | "Pulses & Legumes"
+    | "Spices & Condiments"
+    | "Vegetables"
+    | "Fruits"
+    | "Cash Crops"
+    | "Dairy & Livestock"
+    | "Herbs & Medicinal"
+    | "Nuts & Dry Fruits"
+    | "Flowers & Floriculture"
+    | "Fiber Crops"
+  >("Grains & Cereals");
+  const [newPrice, setNewPrice] = useState("");
+  const [newQuantity, setNewQuantity] = useState("");
+  const [newMandi, setNewMandi] = useState("");
+  const [listingFormErrors, setListingFormErrors] = useState<{ cropName?: string; price?: string; quantity?: string; mandi?: string }>({});
 
   useEffect(() => {
     if (!isProfileMenuOpen) return;
@@ -98,7 +120,27 @@ export default function FarmerDashboard() {
   const handleAvatarSelect = (avatarEmoji: string) => {
     dispatch(updateFarmerAvatar(avatarEmoji));
     setIsPicModalOpen(false);
-    alert("Profile picture updated!");
+  };
+
+  const handleAddListing = (e: React.FormEvent) => {
+    e.preventDefault();
+    const errs: { cropName?: string; price?: string; quantity?: string; mandi?: string } = {};
+    if (!newCropName.trim()) errs.cropName = "Crop name is required.";
+    if (!newPrice || isNaN(Number(newPrice)) || Number(newPrice) <= 0) errs.price = "Enter a valid price per quintal.";
+    if (!newQuantity || isNaN(Number(newQuantity)) || Number(newQuantity) <= 0) errs.quantity = "Enter a valid quantity.";
+    if (!newMandi.trim()) errs.mandi = "Mandi/market location is required.";
+    if (Object.keys(errs).length > 0) { setListingFormErrors(errs); return; }
+    setListingFormErrors({});
+    dispatch(addFarmerListing({
+      id: "F" + Date.now(),
+      cropName: newCropName.trim(),
+      category: newCategory,
+      expectedPrice: Number(newPrice),
+      availableQuantity: Number(newQuantity),
+      mandiSource: newMandi.trim(),
+    }));
+    setNewCropName(""); setNewCategory("Grains & Cereals"); setNewPrice(""); setNewQuantity(""); setNewMandi("");
+    setIsListingModalOpen(false);
   };
 
   const profileProgress = 60 + (profilePic ? 20 : 0) + (bankDetails ? 20 : 0);
@@ -261,45 +303,97 @@ export default function FarmerDashboard() {
             </div>
           </div>
 
-          {/* Active Listings */}
-          <div className="bg-white border border-brand-border-light rounded-2xl p-6 shadow-md flex flex-col gap-4">
-            <div>
-              <h2 className="text-lg font-bold text-gray-800 font-outfit">My Active Listings</h2>
-              <p className="text-[11px] text-brand-text-muted">Live listings currently open for bidding across regional APMCs.</p>
+          {/* My Product Listings */}
+          <div className="bg-white border border-brand-border-light rounded-2xl p-6 shadow-md flex flex-col gap-5">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-bold text-gray-800 font-outfit">My Product Listings</h2>
+                <p className="text-[11px] text-brand-text-muted mt-0.5">Your produce listed on the Krishi Bazar sourcing marketplace.</p>
+              </div>
+              <button
+                onClick={() => setIsListingModalOpen(true)}
+                className="flex items-center gap-1.5 bg-[#1aa35a] hover:bg-[#15803d] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer"
+              >
+                <span className="text-base leading-none">+</span> List New Crop
+              </button>
             </div>
 
-            <div className="overflow-x-auto w-full">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-150 text-[10px] text-brand-text-muted uppercase tracking-wider font-bold">
-                    <th className="py-2.5">Crop Name</th>
-                    <th className="py-2.5">Acreage</th>
-                    <th className="py-2.5">Expected Price</th>
-                    <th className="py-2.5">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 text-xs">
-                  {listings.map((listing) => (
-                    <tr key={listing.id}>
-                      <td className="py-3 font-bold text-gray-800">{listing.cropName}</td>
-                      <td className="py-3 text-brand-text-secondary">{listing.acreage} Acres</td>
-                      <td className="py-3 text-brand-text-secondary">₹{listing.expectedPrice} / Qt</td>
-                      <td className="py-3">
-                        <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-                          listing.status === "Listed" 
-                            ? "text-[#1aa35a] bg-emerald-50 border-emerald-100"
-                            : listing.status === "Pending Sourcing"
-                            ? "text-brand-secondary bg-amber-50 border-amber-100"
-                            : "text-gray-600 bg-gray-50 border-gray-200"
-                        }`}>
-                          {listing.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {listings.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+                <span className="text-4xl">🌾</span>
+                <p className="text-sm font-bold text-gray-600">No listings yet</p>
+                <p className="text-[11px] text-gray-400">Click &quot;List New Crop&quot; to add your first produce to the marketplace.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {listings.map((listing) => {
+                  const categoryColors: Record<string, string> = {
+                    "Grains & Cereals": "bg-amber-50 text-amber-700 border-amber-200",
+                    "Oilseeds": "bg-yellow-50 text-yellow-700 border-yellow-200",
+                    "Pulses & Legumes": "bg-orange-50 text-orange-700 border-orange-200",
+                    "Spices & Condiments": "bg-red-50 text-red-700 border-red-200",
+                    "Vegetables": "bg-green-50 text-green-700 border-green-200",
+                    "Fruits": "bg-pink-50 text-pink-700 border-pink-200",
+                    "Cash Crops": "bg-slate-50 text-slate-700 border-slate-200",
+                    "Dairy & Livestock": "bg-sky-50 text-sky-700 border-sky-200",
+                    "Herbs & Medicinal": "bg-teal-50 text-teal-700 border-teal-200",
+                    "Nuts & Dry Fruits": "bg-brown-50 text-stone-700 border-stone-200",
+                    "Flowers & Floriculture": "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200",
+                    "Fiber Crops": "bg-indigo-50 text-indigo-700 border-indigo-200",
+                  };
+                  const rawListing = rawListings.find((r) => r.id === listing.id);
+                  const category = rawListing?.category || "Grains";
+                  const availableQty = rawListing?.availableQuantity ?? 0;
+                  return (
+                    <div key={listing.id} className="relative border border-gray-150 rounded-2xl p-4 bg-gradient-to-br from-gray-50 to-white hover:shadow-md transition-all duration-200 flex flex-col gap-3">
+                      {/* Status badge */}
+                      <span className={`absolute top-3 right-3 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                        listing.status === "Listed" ? "text-emerald-600 bg-emerald-50 border-emerald-200"
+                        : listing.status === "Pending Sourcing" ? "text-amber-600 bg-amber-50 border-amber-200"
+                        : "text-gray-500 bg-gray-100 border-gray-200"
+                      }`}>{listing.status}</span>
+
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center text-2xl">
+                          {rawListing?.imageEmoji || "🌾"}
+                        </div>
+                        <div className="flex flex-col min-w-0 pr-16">
+                          <span className="font-extrabold text-sm text-gray-800 truncate">{listing.cropName}</span>
+                          <span className={`text-[9px] font-bold mt-0.5 px-1.5 py-0.5 rounded border w-fit ${categoryColors[category]}`}>{category}</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Price</span>
+                          <span className="text-sm font-extrabold text-[#1aa35a]">₹{listing.expectedPrice.toLocaleString()}</span>
+                          <span className="text-[9px] text-gray-400">per Qt</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Stock</span>
+                          <span className="text-sm font-extrabold text-gray-800">{availableQty}</span>
+                          <span className="text-[9px] text-gray-400">Quintals</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Mandi</span>
+                          <span className="text-xs font-bold text-gray-700 truncate">{rawListing?.mandiSource || "—"}</span>
+                        </div>
+                      </div>
+
+                      {rawListing?.productSpecs && (
+                        <div className="flex gap-2 flex-wrap">
+                          <span className="text-[9px] bg-blue-50 text-blue-600 border border-blue-100 px-1.5 py-0.5 rounded font-semibold">Grade {rawListing.grade}</span>
+                          {rawListing.productSpecs.organic && (
+                            <span className="text-[9px] bg-green-50 text-green-600 border border-green-100 px-1.5 py-0.5 rounded font-semibold">🌿 Organic</span>
+                          )}
+                          <span className="text-[9px] bg-gray-50 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded font-semibold">Harvest: {rawListing.productSpecs.harvestDate}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
         </div>
@@ -562,6 +656,145 @@ export default function FarmerDashboard() {
             >
               Close
             </Button>
+          </div>
+        </div>
+      )}
+      {/* List New Product Modal */}
+      {isListingModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-2xl p-6 sm:p-8 w-full max-w-[520px] flex flex-col gap-5 relative animate-in fade-in zoom-in-95">
+            <button
+              onClick={() => { setIsListingModalOpen(false); setListingFormErrors({}); }}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold transition-all border border-gray-200/50 cursor-pointer"
+            >
+              ✕
+            </button>
+
+            <div>
+              <h3 className="text-xl font-extrabold font-outfit text-gray-900">List New Crop</h3>
+              <p className="text-[11px] text-gray-500 mt-1">Your listing will appear live on the Krishi Bazar B2B sourcing marketplace instantly.</p>
+            </div>
+
+            <form onSubmit={handleAddListing} className="flex flex-col gap-4">
+
+              {/* Crop Name */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Crop Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Premium Sharbati Wheat"
+                  value={newCropName}
+                  onChange={(e) => { setNewCropName(e.target.value); setListingFormErrors((p) => ({ ...p, cropName: "" })); }}
+                  className={`w-full text-sm p-3 rounded-xl border focus:outline-none font-semibold bg-gray-50 ${listingFormErrors.cropName ? "border-red-400" : "border-gray-200 focus:border-[#1aa35a]"}`}
+                />
+                {listingFormErrors.cropName && <p className="text-red-500 text-[10px] font-semibold">{listingFormErrors.cropName}</p>}
+              </div>
+
+              {/* Category */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Category</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    "Grains & Cereals",
+                    "Oilseeds",
+                    "Pulses & Legumes",
+                    "Spices & Condiments",
+                    "Vegetables",
+                    "Fruits",
+                    "Cash Crops",
+                    "Dairy & Livestock",
+                    "Herbs & Medicinal",
+                    "Nuts & Dry Fruits",
+                    "Flowers & Floriculture",
+                    "Fiber Crops",
+                  ] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setNewCategory(cat)}
+                      className={`text-[10px] font-bold py-2 px-1 rounded-xl border transition-all cursor-pointer ${newCategory === cat ? "bg-[#1aa35a] text-white border-[#1aa35a] shadow-sm" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-[#1aa35a]"}`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price & Quantity row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Price (₹/Qt)</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 2450"
+                    value={newPrice}
+                    min={1}
+                    onChange={(e) => { setNewPrice(e.target.value); setListingFormErrors((p) => ({ ...p, price: "" })); }}
+                    className={`w-full text-sm p-3 rounded-xl border focus:outline-none font-semibold bg-gray-50 ${listingFormErrors.price ? "border-red-400" : "border-gray-200 focus:border-[#1aa35a]"}`}
+                  />
+                  {listingFormErrors.price && <p className="text-red-500 text-[10px] font-semibold">{listingFormErrors.price}</p>}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Quantity (Qt)</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 200"
+                    value={newQuantity}
+                    min={1}
+                    onChange={(e) => { setNewQuantity(e.target.value); setListingFormErrors((p) => ({ ...p, quantity: "" })); }}
+                    className={`w-full text-sm p-3 rounded-xl border focus:outline-none font-semibold bg-gray-50 ${listingFormErrors.quantity ? "border-red-400" : "border-gray-200 focus:border-[#1aa35a]"}`}
+                  />
+                  {listingFormErrors.quantity && <p className="text-red-500 text-[10px] font-semibold">{listingFormErrors.quantity}</p>}
+                </div>
+              </div>
+
+              {/* Mandi Location */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Mandi / Market Location</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Indore APMC"
+                  value={newMandi}
+                  onChange={(e) => { setNewMandi(e.target.value); setListingFormErrors((p) => ({ ...p, mandi: "" })); }}
+                  className={`w-full text-sm p-3 rounded-xl border focus:outline-none font-semibold bg-gray-50 ${listingFormErrors.mandi ? "border-red-400" : "border-gray-200 focus:border-[#1aa35a]"}`}
+                />
+                {listingFormErrors.mandi && <p className="text-red-500 text-[10px] font-semibold">{listingFormErrors.mandi}</p>}
+              </div>
+
+              {/* Summary preview */}
+              {newCropName && newPrice && newQuantity && (
+                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 flex justify-between items-center">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Estimated Listing Value</span>
+                    <span className="text-xl font-extrabold text-emerald-700 mt-0.5">
+                      ₹{(Number(newPrice) * Number(newQuantity)).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="text-right text-[10px] text-emerald-600 font-semibold">
+                    <div>{newQuantity} Quintals</div>
+                    <div>@ ₹{Number(newPrice).toLocaleString()}/Qt</div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-1">
+                <Button
+                  type="button"
+                  onClick={() => { setIsListingModalOpen(false); setListingFormErrors({}); }}
+                  variant="outlined"
+                  sx={{ flex: 1, textTransform: "none", borderRadius: "12px", fontWeight: 700 }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{ flex: 1, textTransform: "none", borderRadius: "12px", fontWeight: 700, backgroundColor: "#1aa35a", "&:hover": { backgroundColor: "#15803d" }, color: "#fff" }}
+                >
+                  🌾 Publish Listing
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}
