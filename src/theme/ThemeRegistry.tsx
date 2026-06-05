@@ -4,6 +4,8 @@ import * as React from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 const theme = createTheme({
   palette: {
     mode: "light",
@@ -52,10 +54,17 @@ const theme = createTheme({
 });
 
 export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
+  const clientId =
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+    process.env.VITE_GOOGLE_CLIENT_ID ||
+    "1015489695105-rmlpim28s6epftflr5e5pkthi5vaumtr.apps.googleusercontent.com";
+
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      {children}
-    </ThemeProvider>
+    <GoogleOAuthProvider clientId={clientId}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        {children}
+      </ThemeProvider>
+    </GoogleOAuthProvider>
   );
 }

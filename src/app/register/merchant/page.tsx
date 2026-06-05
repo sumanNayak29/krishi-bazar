@@ -10,6 +10,7 @@ import {
   FormControl 
 } from "@mui/material";
 import { ArrowBackIcon, GoogleIcon } from "@/icons";
+import { useSharedGoogleLogin } from "@/hooks/useSharedGoogleLogin";
 
 interface FormState {
   fullName: string;
@@ -43,6 +44,45 @@ export default function MerchantRegistrationPage() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [loginErrors, setLoginErrors] = useState<Partial<Record<"email" | "password", string>>>({});
+
+  // Google login intermediate completion states
+  const [googleUserInfo, setGoogleUserInfo] = useState<{ name: string; email: string; picture?: string } | null>(null);
+  const [showGoogleComplete, setShowGoogleComplete] = useState(false);
+  const [googleState, setGoogleState] = useState("");
+  const [googleDistrict, setGoogleDistrict] = useState("");
+  const [googleErrors, setGoogleErrors] = useState<{ state?: string; district?: string }>({});
+
+  const googleLogin = useSharedGoogleLogin({
+    onLoginSuccess: (userInfo) => {
+      setGoogleUserInfo(userInfo);
+      setShowGoogleComplete(true);
+    }
+  });
+
+  const handleGoogleCompleteSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const errs: { state?: string; district?: string } = {};
+    if (!googleState.trim()) {
+      errs.state = "State selection is required.";
+    }
+    if (googleDistrict.trim().length < 3) {
+      errs.district = "District name must be at least 3 characters.";
+    }
+
+    setGoogleErrors(errs);
+    if (Object.keys(errs).length === 0 && googleUserInfo) {
+      setForm((prev) => ({
+        ...prev,
+        fullName: googleUserInfo.name,
+        email: googleUserInfo.email,
+        state: googleState,
+        district: googleDistrict,
+      }));
+      setLoginEmail(googleUserInfo.email);
+      setLoginSuccess(true);
+      setShowGoogleComplete(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | any) => {
     const { name, value } = e.target;
@@ -191,130 +231,241 @@ export default function MerchantRegistrationPage() {
 
             {/* Right Form Panel (White Background) */}
             <div className="w-full md:w-[54%] md:ml-[46%] p-8 sm:p-12 md:pl-8 md:pr-16 flex flex-col justify-center gap-6 bg-white text-gray-800 z-10">
-              <div>
-                <h2 className="text-3xl font-extrabold text-gray-700 font-outfit mb-1">Login</h2>
-              </div>
-
-              <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="loginEmail">
-                    Username/Email address <span className="text-red-500">*</span>
-                  </label>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    id="loginEmail"
-                    placeholder="Codewithrandom@gmail.com"
-                    value={loginEmail}
-                    onChange={(e) => {
-                      setLoginEmail(e.target.value);
-                      setLoginErrors((prev) => ({ ...prev, email: "" }));
-                    }}
-                    error={!!loginErrors.email}
-                    helperText={loginErrors.email}
-                    sx={muiInputStyle(!!loginErrors.email)}
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="loginPassword">
-                    Password <span className="text-red-500">*</span>
-                  </label>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    id="loginPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={loginPassword}
-                    onChange={(e) => {
-                      setLoginPassword(e.target.value);
-                      setLoginErrors((prev) => ({ ...prev, password: "" }));
-                    }}
-                    error={!!loginErrors.password}
-                    helperText={loginErrors.password}
-                    sx={muiInputStyle(!!loginErrors.password)}
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col gap-3 mt-2">
-                  <Button 
-                    type="submit" 
-                    variant="outlined" 
-                    fullWidth 
-                    sx={{ 
-                      textTransform: "none", 
-                      borderRadius: "9999px", 
-                      fontWeight: 700, 
-                      py: 1.2, 
-                      borderColor: "#1aa35a", 
-                      color: "#1aa35a",
-                      borderWidth: "1.5px",
-                      "&:hover": { 
-                        backgroundColor: "#1aa35a", 
-                        color: "#fff", 
-                        borderColor: "#1aa35a",
-                        borderWidth: "1.5px"
-                      } 
-                    }}
-                  >
-                    Sign In
-                  </Button>
-
-                  <div className="flex items-center my-0.5">
-                    <div className="flex-grow border-t border-gray-200"></div>
-                    <span className="flex-shrink mx-4 text-gray-400 text-[10px] font-bold uppercase tracking-wider">or</span>
-                    <div className="flex-grow border-t border-gray-200"></div>
+              {showGoogleComplete ? (
+                <>
+                  <div>
+                    <h2 className="text-2xl font-extrabold text-gray-700 font-outfit mb-1">One More Step</h2>
+                    <p className="text-xs text-brand-text-secondary mt-1">
+                      Set your region to verify your merchant account.
+                    </p>
                   </div>
 
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => alert("Simulated Google authentication initiated.")}
-                    startIcon={
-                      <GoogleIcon />
-                    }
-                    sx={{
-                      textTransform: "none",
-                      borderRadius: "9999px",
-                      fontWeight: 600,
-                      py: 1.1,
-                      borderColor: "#d1d5db",
-                      color: "#374151",
-                      borderWidth: "1.5px",
-                      backgroundColor: "#fff",
-                      "&:hover": {
-                        backgroundColor: "#f9fafb",
-                        borderColor: "#9ca3af",
-                        borderWidth: "1.5px"
-                      }
-                    }}
-                  >
-                    Sign in with Google
-                  </Button>
-                  
-                  <div className="flex justify-between items-center mt-2">
-                    <span 
-                      onClick={() => alert("Simulated password recovery link clicked.")} 
-                      className="text-xs text-[#1aa35a] hover:underline cursor-pointer font-bold transition-all"
-                    >
-                      Forgot password?
-                    </span>
-                    
-                    <span 
-                      onClick={() => {
-                        setIsLoginMode(false);
-                        setIsRegistered(false);
-                      }} 
-                      className="md:hidden text-xs text-[#1aa35a] hover:underline cursor-pointer font-bold"
-                    >
-                      New user? Register account
-                    </span>
+                  {googleUserInfo && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-150">
+                      {googleUserInfo.picture ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={googleUserInfo.picture} alt="Profile" className="w-10 h-10 rounded-full border border-gray-200" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-[#1aa35a]">
+                          {googleUserInfo.name[0]}
+                        </div>
+                      )}
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-bold text-gray-800 truncate">{googleUserInfo.name}</span>
+                        <span className="text-[10px] text-gray-500 truncate">{googleUserInfo.email}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleGoogleCompleteSubmit} className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="googleState">State</label>
+                      <FormControl fullWidth size="small" error={!!googleErrors.state} sx={muiWizardInputStyle}>
+                        <Select
+                          id="googleState"
+                          value={googleState}
+                          onChange={(e) => {
+                            setGoogleState(e.target.value);
+                            setGoogleErrors((prev) => ({ ...prev, state: "" }));
+                          }}
+                          displayEmpty
+                          renderValue={(val) => val || <span className="text-gray-400">Select State</span>}
+                        >
+                          <MenuItem value="Madhya Pradesh">Madhya Pradesh</MenuItem>
+                          <MenuItem value="Punjab">Punjab</MenuItem>
+                          <MenuItem value="Rajasthan">Rajasthan</MenuItem>
+                          <MenuItem value="Uttar Pradesh">Uttar Pradesh</MenuItem>
+                          <MenuItem value="Maharashtra">Maharashtra</MenuItem>
+                        </Select>
+                        {googleErrors.state && <p className="text-red-500 text-[10px] mt-1 font-semibold">{googleErrors.state}</p>}
+                      </FormControl>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="googleDistrict">District</label>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        id="googleDistrict"
+                        placeholder="e.g. Indore"
+                        value={googleDistrict}
+                        onChange={(e) => {
+                          setGoogleDistrict(e.target.value);
+                          setGoogleErrors((prev) => ({ ...prev, district: "" }));
+                        }}
+                        error={!!googleErrors.district}
+                        helperText={googleErrors.district}
+                        sx={muiWizardInputStyle}
+                      />
+                    </div>
+
+                    <div className="flex gap-2.5 mt-2">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setShowGoogleComplete(false);
+                          setGoogleUserInfo(null);
+                        }}
+                        variant="outlined"
+                        sx={{
+                          flex: 1,
+                          textTransform: "none",
+                          borderRadius: "9999px",
+                          fontWeight: 700,
+                          py: 1,
+                          borderColor: "gray",
+                          color: "gray",
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        sx={{
+                          flex: 2,
+                          textTransform: "none",
+                          borderRadius: "9999px",
+                          fontWeight: 750,
+                          py: 1,
+                          backgroundColor: "#1aa35a",
+                          color: "#fff",
+                          "&:hover": { backgroundColor: "#15803d" },
+                        }}
+                      >
+                        Log In
+                      </Button>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <h2 className="text-3xl font-extrabold text-gray-700 font-outfit mb-1">Login</h2>
                   </div>
-                </div>
-              </form>
+
+                  <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="loginEmail">
+                        Username/Email address <span className="text-red-500">*</span>
+                      </label>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        id="loginEmail"
+                        placeholder="Codewithrandom@gmail.com"
+                        value={loginEmail}
+                        onChange={(e) => {
+                          setLoginEmail(e.target.value);
+                          setLoginErrors((prev) => ({ ...prev, email: "" }));
+                        }}
+                        error={!!loginErrors.email}
+                        helperText={loginErrors.email}
+                        sx={muiInputStyle(!!loginErrors.email)}
+                        required
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="loginPassword">
+                        Password <span className="text-red-500">*</span>
+                      </label>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        id="loginPassword"
+                        type="password"
+                        placeholder="••••••••"
+                        value={loginPassword}
+                        onChange={(e) => {
+                          setLoginPassword(e.target.value);
+                          setLoginErrors((prev) => ({ ...prev, password: "" }));
+                        }}
+                        error={!!loginErrors.password}
+                        helperText={loginErrors.password}
+                        sx={muiInputStyle(!!loginErrors.password)}
+                        required
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-3 mt-2">
+                      <Button 
+                        type="submit" 
+                        variant="outlined" 
+                        fullWidth 
+                        sx={{ 
+                          textTransform: "none", 
+                          borderRadius: "9999px", 
+                          fontWeight: 700, 
+                          py: 1.2, 
+                          borderColor: "#1aa35a", 
+                          color: "#1aa35a",
+                          borderWidth: "1.5px",
+                          "&:hover": { 
+                            backgroundColor: "#1aa35a", 
+                            color: "#fff", 
+                            borderColor: "#1aa35a",
+                            borderWidth: "1.5px"
+                          } 
+                        }}
+                      >
+                        Sign In
+                      </Button>
+
+                      <div className="flex items-center my-0.5">
+                        <div className="flex-grow border-t border-gray-200"></div>
+                        <span className="flex-shrink mx-4 text-gray-400 text-[10px] font-bold uppercase tracking-wider">or</span>
+                        <div className="flex-grow border-t border-gray-200"></div>
+                      </div>
+
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        onClick={() => googleLogin()}
+                        startIcon={
+                          <GoogleIcon />
+                        }
+                        sx={{
+                          textTransform: "none",
+                          borderRadius: "9999px",
+                          fontWeight: 600,
+                          py: 1.1,
+                          borderColor: "#d1d5db",
+                          color: "#374151",
+                          borderWidth: "1.5px",
+                          backgroundColor: "#fff",
+                          "&:hover": {
+                            backgroundColor: "#f9fafb",
+                            borderColor: "#9ca3af",
+                            borderWidth: "1.5px"
+                          }
+                        }}
+                      >
+                        Sign in with Google
+                      </Button>
+                      
+                      <div className="flex justify-between items-center mt-2">
+                        <span 
+                          onClick={() => alert("Simulated password recovery link clicked.")} 
+                          className="text-xs text-[#1aa35a] hover:underline cursor-pointer font-bold transition-all"
+                        >
+                          Forgot password?
+                        </span>
+                        
+                        <span 
+                          onClick={() => {
+                            setIsLoginMode(false);
+                            setIsRegistered(false);
+                          }} 
+                          className="md:hidden text-xs text-[#1aa35a] hover:underline cursor-pointer font-bold"
+                        >
+                          New user? Register account
+                        </span>
+                      </div>
+                    </div>
+                  </form>
+                </>
+              )}
             </div>
           </>
         )}
@@ -358,7 +509,7 @@ export default function MerchantRegistrationPage() {
               </Button>
               <Button 
                 component={Link} 
-                href="/" 
+                href="/dashboard/merchant" 
                 variant="contained" 
                 sx={{ 
                   textTransform: "none", 
@@ -609,7 +760,7 @@ export default function MerchantRegistrationPage() {
               </Button>
               <Button
                 component={Link}
-                href="/"
+                href="/dashboard/merchant"
                 variant="contained"
                 sx={{ 
                   textTransform: "none", 

@@ -2,14 +2,16 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { 
-  Button, 
-  TextField, 
-  Select, 
-  MenuItem, 
-  FormControl 
+import {
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl
 } from "@mui/material";
 import { ArrowBackIcon, GoogleIcon } from "@/icons";
+import { useSharedGoogleLogin } from "@/hooks/useSharedGoogleLogin";
+
 
 interface FormState {
   fullName: string;
@@ -34,15 +36,22 @@ export default function FarmerRegistrationPage() {
   const [isRegistered, setIsRegistered] = useState<boolean>(false);
   const [form, setForm] = useState<FormState>(initialFormState);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
-  
+
   // Stable random card suffix for React 19 render purity
   const [cardIdSuffix] = useState(() => Math.floor(1000 + Math.random() * 9000));
-  
+
   // Login form states
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [loginErrors, setLoginErrors] = useState<Partial<Record<"email" | "password", string>>>({});
+
+  // Google login intermediate completion states
+  const [googleUserInfo, setGoogleUserInfo] = useState<{ name: string; email: string; picture?: string } | null>(null);
+  const [showGoogleComplete, setShowGoogleComplete] = useState(false);
+  const [googleState, setGoogleState] = useState("");
+  const [googleDistrict, setGoogleDistrict] = useState("");
+  const [googleErrors, setGoogleErrors] = useState<{ state?: string; district?: string }>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | any) => {
     const { name, value } = e.target;
@@ -83,6 +92,38 @@ export default function FarmerRegistrationPage() {
     }
   };
 
+  const googleLogin = useSharedGoogleLogin({
+    onLoginSuccess: (userInfo) => {
+      setGoogleUserInfo(userInfo);
+      setShowGoogleComplete(true);
+    }
+  });
+
+  const handleGoogleCompleteSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const errs: { state?: string; district?: string } = {};
+    if (!googleState.trim()) {
+      errs.state = "State selection is required.";
+    }
+    if (googleDistrict.trim().length < 3) {
+      errs.district = "District name must be at least 3 characters.";
+    }
+
+    setGoogleErrors(errs);
+    if (Object.keys(errs).length === 0 && googleUserInfo) {
+      setForm((prev) => ({
+        ...prev,
+        fullName: googleUserInfo.name,
+        email: googleUserInfo.email,
+        state: googleState,
+        district: googleDistrict,
+      }));
+      setLoginEmail(googleUserInfo.email);
+      setLoginSuccess(true);
+      setShowGoogleComplete(false);
+    }
+  };
+
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newLoginErrors: Partial<Record<"email" | "password", string>> = {};
@@ -105,14 +146,14 @@ export default function FarmerRegistrationPage() {
       borderRadius: "9999px",
       backgroundColor: "#f9fafb",
       transition: "all 0.2s ease-in-out",
-      "& fieldset": { 
+      "& fieldset": {
         borderColor: hasError ? "#f87171" : "#d1d5db",
         borderWidth: "1.5px"
       },
-      "&:hover fieldset": { 
-        borderColor: hasError ? "#f87171" : "#9ca3af" 
+      "&:hover fieldset": {
+        borderColor: hasError ? "#f87171" : "#9ca3af"
       },
-      "&.Mui-focused fieldset": { 
+      "&.Mui-focused fieldset": {
         borderColor: hasError ? "#ef4444" : "#1aa35a",
         borderWidth: "1.5px"
       },
@@ -163,12 +204,12 @@ export default function FarmerRegistrationPage() {
       </Link>
 
       <div className="w-full max-w-[850px] bg-white border border-gray-200/80 rounded-[24px] shadow-2xl relative overflow-hidden flex flex-col md:flex-row min-h-[500px] z-10">
-        
+
         {/* ==================== LOGIN VIEW ==================== */}
         {isLoginMode && !loginSuccess && (
           <>
             {/* Left Welcome Panel (Green Triangle Overlay) */}
-            <div 
+            <div
               className="hidden md:flex absolute top-0 left-0 h-full w-[46%] bg-[#1aa35a] z-20 flex-col justify-center text-white"
               style={{ clipPath: "polygon(0 0, 100% 0, 75% 100%, 0 100%)" }}
             >
@@ -176,8 +217,8 @@ export default function FarmerRegistrationPage() {
                 <h2 className="text-4xl font-extrabold font-outfit mb-3 tracking-wide">Welcome!</h2>
                 <p className="text-sm font-medium leading-relaxed opacity-90">Create your account.</p>
                 <p className="text-sm font-medium leading-relaxed opacity-90">For Free!</p>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => {
                     setIsLoginMode(false);
                     setIsRegistered(false);
@@ -191,130 +232,239 @@ export default function FarmerRegistrationPage() {
 
             {/* Right Form Panel (White Background) */}
             <div className="w-full md:w-[54%] md:ml-[46%] p-8 sm:p-12 md:pl-8 md:pr-16 flex flex-col justify-center gap-6 bg-white text-gray-800 z-10">
-              <div>
-                <h2 className="text-3xl font-extrabold text-gray-700 font-outfit mb-1">Login</h2>
-              </div>
-
-              <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="loginEmail">
-                    Username/Email address <span className="text-red-500">*</span>
-                  </label>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    id="loginEmail"
-                    placeholder="Codewithrandom@gmail.com"
-                    value={loginEmail}
-                    onChange={(e) => {
-                      setLoginEmail(e.target.value);
-                      setLoginErrors((prev) => ({ ...prev, email: "" }));
-                    }}
-                    error={!!loginErrors.email}
-                    helperText={loginErrors.email}
-                    sx={muiInputStyle(!!loginErrors.email)}
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="loginPassword">
-                    Password <span className="text-red-500">*</span>
-                  </label>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    id="loginPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={loginPassword}
-                    onChange={(e) => {
-                      setLoginPassword(e.target.value);
-                      setLoginErrors((prev) => ({ ...prev, password: "" }));
-                    }}
-                    error={!!loginErrors.password}
-                    helperText={loginErrors.password}
-                    sx={muiInputStyle(!!loginErrors.password)}
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col gap-3 mt-2">
-                  <Button 
-                    type="submit" 
-                    variant="outlined" 
-                    fullWidth 
-                    sx={{ 
-                      textTransform: "none", 
-                      borderRadius: "9999px", 
-                      fontWeight: 700, 
-                      py: 1.2, 
-                      borderColor: "#1aa35a", 
-                      color: "#1aa35a",
-                      borderWidth: "1.5px",
-                      "&:hover": { 
-                        backgroundColor: "#1aa35a", 
-                        color: "#fff", 
-                        borderColor: "#1aa35a",
-                        borderWidth: "1.5px"
-                      } 
-                    }}
-                  >
-                    Sign In
-                  </Button>
-
-                  <div className="flex items-center my-0.5">
-                    <div className="flex-grow border-t border-gray-200"></div>
-                    <span className="flex-shrink mx-4 text-gray-400 text-[10px] font-bold uppercase tracking-wider">or</span>
-                    <div className="flex-grow border-t border-gray-200"></div>
+              {showGoogleComplete ? (
+                <>
+                  <div>
+                    <h2 className="text-2xl font-extrabold text-gray-700 font-outfit mb-1">One More Step</h2>
+                    <p className="text-xs text-brand-text-secondary mt-1">
+                      Set your region to verify your farmer account.
+                    </p>
                   </div>
 
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => alert("Simulated Google authentication initiated.")}
-                    startIcon={
-                      <GoogleIcon />
-                    }
-                    sx={{
-                      textTransform: "none",
-                      borderRadius: "9999px",
-                      fontWeight: 600,
-                      py: 1.1,
-                      borderColor: "#d1d5db",
-                      color: "#374151",
-                      borderWidth: "1.5px",
-                      backgroundColor: "#fff",
-                      "&:hover": {
-                        backgroundColor: "#f9fafb",
-                        borderColor: "#9ca3af",
-                        borderWidth: "1.5px"
-                      }
-                    }}
-                  >
-                    Sign in with Google
-                  </Button>
-                  
-                  <div className="flex justify-between items-center mt-2">
-                    <span 
-                      onClick={() => alert("Simulated password recovery link clicked.")} 
-                      className="text-xs text-[#1aa35a] hover:underline cursor-pointer font-bold transition-all"
-                    >
-                      Forgot password?
-                    </span>
-                    
-                    <span 
-                      onClick={() => {
-                        setIsLoginMode(false);
-                        setIsRegistered(false);
-                      }} 
-                      className="md:hidden text-xs text-[#1aa35a] hover:underline cursor-pointer font-bold"
-                    >
-                      New user? Register account
-                    </span>
+                  {googleUserInfo && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-150">
+                      {googleUserInfo.picture ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={googleUserInfo.picture} alt="Profile" className="w-10 h-10 rounded-full border border-gray-200" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-[#1aa35a]">
+                          {googleUserInfo.name[0]}
+                        </div>
+                      )}
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-bold text-gray-800 truncate">{googleUserInfo.name}</span>
+                        <span className="text-[10px] text-gray-500 truncate">{googleUserInfo.email}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleGoogleCompleteSubmit} className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="googleState">State</label>
+                      <FormControl fullWidth size="small" error={!!googleErrors.state} sx={muiWizardInputStyle}>
+                        <Select
+                          id="googleState"
+                          value={googleState}
+                          onChange={(e) => {
+                            setGoogleState(e.target.value);
+                            setGoogleErrors((prev) => ({ ...prev, state: "" }));
+                          }}
+                          displayEmpty
+                          renderValue={(val) => val || <span className="text-gray-400">Select State</span>}
+                        >
+                          <MenuItem value="Madhya Pradesh">Madhya Pradesh</MenuItem>
+                          <MenuItem value="Punjab">Punjab</MenuItem>
+                          <MenuItem value="Rajasthan">Rajasthan</MenuItem>
+                          <MenuItem value="Uttar Pradesh">Uttar Pradesh</MenuItem>
+                          <MenuItem value="Maharashtra">Maharashtra</MenuItem>
+                        </Select>
+                        {googleErrors.state && <p className="text-red-500 text-[10px] mt-1 font-semibold">{googleErrors.state}</p>}
+                      </FormControl>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="googleDistrict">District</label>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        id="googleDistrict"
+                        placeholder="e.g. Indore"
+                        value={googleDistrict}
+                        onChange={(e) => {
+                          setGoogleDistrict(e.target.value);
+                          setGoogleErrors((prev) => ({ ...prev, district: "" }));
+                        }}
+                        error={!!googleErrors.district}
+                        helperText={googleErrors.district}
+                        sx={muiWizardInputStyle}
+                      />
+                    </div>
+
+                    <div className="flex gap-2.5 mt-2">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setShowGoogleComplete(false);
+                          setGoogleUserInfo(null);
+                        }}
+                        variant="outlined"
+                        sx={{
+                          flex: 1,
+                          textTransform: "none",
+                          borderRadius: "9999px",
+                          fontWeight: 700,
+                          py: 1,
+                          borderColor: "gray",
+                          color: "gray",
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        sx={{
+                          flex: 2,
+                          textTransform: "none",
+                          borderRadius: "9999px",
+                          fontWeight: 750,
+                          py: 1,
+                          backgroundColor: "#1aa35a",
+                          color: "#fff",
+                          "&:hover": { backgroundColor: "#15803d" },
+                        }}
+                      >
+                        Log In
+                      </Button>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <h2 className="text-3xl font-extrabold text-gray-700 font-outfit mb-1">Login</h2>
                   </div>
-                </div>
-              </form>
+
+                  <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="loginEmail">
+                        Username/Email address <span className="text-red-500">*</span>
+                      </label>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        id="loginEmail"
+                        placeholder="Codewithrandom@gmail.com"
+                        value={loginEmail}
+                        onChange={(e) => {
+                          setLoginEmail(e.target.value);
+                          setLoginErrors((prev) => ({ ...prev, email: "" }));
+                        }}
+                        error={!!loginErrors.email}
+                        helperText={loginErrors.email}
+                        sx={muiInputStyle(!!loginErrors.email)}
+                        required
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="loginPassword">
+                        Password <span className="text-red-500">*</span>
+                      </label>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        id="loginPassword"
+                        type="password"
+                        placeholder="••••••••"
+                        value={loginPassword}
+                        onChange={(e) => {
+                          setLoginPassword(e.target.value);
+                          setLoginErrors((prev) => ({ ...prev, password: "" }));
+                        }}
+                        error={!!loginErrors.password}
+                        helperText={loginErrors.password}
+                        sx={muiInputStyle(!!loginErrors.password)}
+                        required
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-3 mt-2">
+                      <Button
+                        type="submit"
+                        variant="outlined"
+                        fullWidth
+                        sx={{
+                          textTransform: "none",
+                          borderRadius: "9999px",
+                          fontWeight: 700,
+                          py: 1.2,
+                          borderColor: "#1aa35a",
+                          color: "#1aa35a",
+                          borderWidth: "1.5px",
+                          "&:hover": {
+                            backgroundColor: "#1aa35a",
+                            color: "#fff",
+                            borderColor: "#1aa35a",
+                            borderWidth: "1.5px"
+                          }
+                        }}
+                      >
+                        Sign In
+                      </Button>
+
+                      <div className="flex items-center my-0.5">
+                        <div className="flex-grow border-t border-gray-200"></div>
+                        <span className="flex-shrink mx-4 text-gray-400 text-[10px] font-bold uppercase tracking-wider">or</span>
+                        <div className="flex-grow border-t border-gray-200"></div>
+                      </div>
+
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        onClick={() => googleLogin()}
+                        startIcon={<GoogleIcon />}
+                        sx={{
+                          textTransform: "none",
+                          borderRadius: "9999px",
+                          fontWeight: 600,
+                          py: 1.1,
+                          borderColor: "#d1d5db",
+                          color: "#374151",
+                          borderWidth: "1.5px",
+                          backgroundColor: "#fff",
+                          "&:hover": {
+                            backgroundColor: "#f9fafb",
+                            borderColor: "#9ca3af",
+                            borderWidth: "1.5px"
+                          }
+                        }}
+                      >
+                        Sign in with Google
+                      </Button>
+
+                      <div className="flex justify-between items-center mt-2">
+                        <span
+                          onClick={() => alert("Simulated password recovery link clicked.")}
+                          className="text-xs text-[#1aa35a] hover:underline cursor-pointer font-bold transition-all"
+                        >
+                          Forgot password?
+                        </span>
+
+                        <span
+                          onClick={() => {
+                            setIsLoginMode(false);
+                            setIsRegistered(false);
+                          }}
+                          className="md:hidden text-xs text-[#1aa35a] hover:underline cursor-pointer font-bold"
+                        >
+                          New user? Register account
+                        </span>
+                      </div>
+                    </div>
+                  </form>
+                </>
+              )}
             </div>
           </>
         )}
@@ -327,7 +477,7 @@ export default function FarmerRegistrationPage() {
               <h2 className="text-2xl font-extrabold font-outfit text-[#1aa35a] mb-1">Welcome Back!</h2>
               <p className="text-sm text-gray-500">Authenticated as <span className="text-gray-900 font-semibold">{loginEmail}</span></p>
             </div>
-            
+
             <div className="p-5 rounded-2xl border border-gray-200 bg-gray-50 text-left w-full max-w-[360px] flex flex-col gap-2.5">
               <div className="flex justify-between border-b border-gray-200 pb-2 mb-1">
                 <span className="text-xs text-gray-500 font-semibold">Account Type</span>
@@ -344,21 +494,21 @@ export default function FarmerRegistrationPage() {
             </div>
 
             <div className="flex gap-4 w-full justify-center mt-2">
-              <Button 
+              <Button
                 onClick={() => {
                   setLoginSuccess(false);
                   setIsLoginMode(true);
                   setLoginEmail("");
                   setLoginPassword("");
-                }} 
-                variant="outlined" 
+                }}
+                variant="outlined"
                 sx={{ textTransform: "none", borderRadius: "30px", fontWeight: 600, color: "gray", borderColor: "gray", px: 4 }}
               >
                 Log Out
               </Button>
               <Button 
                 component={Link} 
-                href="/" 
+                href="/dashboard/farmer" 
                 variant="contained" 
                 sx={{ 
                   textTransform: "none", 
@@ -495,31 +645,31 @@ export default function FarmerRegistrationPage() {
                 </div>
 
                 <div className="flex gap-4 mt-4">
-                  <Button 
+                  <Button
                     type="button"
-                    onClick={() => setIsLoginMode(true)} 
-                    variant="outlined" 
+                    onClick={() => setIsLoginMode(true)}
+                    variant="outlined"
                     fullWidth
-                    sx={{ 
-                      textTransform: "none", 
-                      fontWeight: 600, 
-                      borderRadius: "20px", 
-                      color: "gray", 
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: 600,
+                      borderRadius: "20px",
+                      color: "gray",
                       borderColor: "gray",
                       "&:hover": { borderColor: "darkgray" }
                     }}
                   >
                     Back to Sign In
                   </Button>
-                  <Button 
+                  <Button
                     type="submit"
-                    variant="contained" 
+                    variant="contained"
                     fullWidth
-                    sx={{ 
-                      textTransform: "none", 
-                      fontWeight: 600, 
-                      color: "#fff", 
-                      borderRadius: "20px", 
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: 600,
+                      color: "#fff",
+                      borderRadius: "20px",
                       backgroundColor: "#1aa35a",
                       "&:hover": { backgroundColor: "#15803d" }
                     }}
@@ -531,15 +681,15 @@ export default function FarmerRegistrationPage() {
             </div>
 
             {/* Right Welcome Back Panel (Green Triangle Overlay) */}
-            <div 
+            <div
               className="hidden md:flex absolute top-0 right-0 h-full w-[46%] bg-[#1aa35a] z-20 flex-col justify-center text-white"
               style={{ clipPath: "polygon(25% 0, 100% 0, 100% 100%, 0 100%)" }}
             >
               <div className="p-8 sm:p-12 flex flex-col gap-2 items-end text-right">
                 <h2 className="text-3xl font-extrabold font-outfit mb-3 tracking-wide">Welcome Back!</h2>
                 <p className="text-sm font-medium leading-relaxed opacity-90">Already have a sourcing account?</p>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => {
                     setIsLoginMode(true);
                     setLoginSuccess(false);
@@ -609,7 +759,7 @@ export default function FarmerRegistrationPage() {
               </Button>
               <Button
                 component={Link}
-                href="/"
+                href="/dashboard/farmer"
                 variant="contained"
                 sx={{ 
                   textTransform: "none", 
@@ -623,7 +773,7 @@ export default function FarmerRegistrationPage() {
                   "&:hover": { backgroundColor: "#15803d" }
                 }}
               >
-                Go to Catalog
+                Go to Marketplace
               </Button>
             </div>
           </div>
