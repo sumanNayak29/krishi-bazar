@@ -5,6 +5,8 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Provider } from "react-redux";
+import { store } from "@/store";
 
 const theme = createTheme({
   palette: {
@@ -60,11 +62,13 @@ export default function ThemeRegistry({ children }: { children: React.ReactNode 
     "1015489695105-rmlpim28s6epftflr5e5pkthi5vaumtr.apps.googleusercontent.com";
 
   return (
-    <GoogleOAuthProvider clientId={clientId}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </ThemeProvider>
-    </GoogleOAuthProvider>
+    <Provider store={store}>
+      <GoogleOAuthProvider clientId={clientId}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          {children}
+        </ThemeProvider>
+      </GoogleOAuthProvider>
+    </Provider>
   );
 }

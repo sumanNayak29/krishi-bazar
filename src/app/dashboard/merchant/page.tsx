@@ -3,6 +3,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@mui/material";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { procureProduce } from "@/store/marketSlice";
+import { updateMerchantBank, updateMerchantAvatar } from "@/store/userSlice";
 
 interface Shipment {
   id: string;
@@ -209,20 +212,23 @@ const initialFarmerListings: FarmerListing[] = [
 ];
 
 export default function MerchantDashboard() {
-  const merchantId = "KB-BUY-7940-1925";
-  const [shipments, setShipments] = useState<Shipment[]>(initialShipments);
-  const [farmerListings, setFarmerListings] = useState<FarmerListing[]>(initialFarmerListings);
-  
+  const dispatch = useAppDispatch();
+
+  // Redux Selectors
+  const shipments = useAppSelector((state) => state.market.shipments);
+  const farmerListings = useAppSelector((state) => state.market.listings);
+  const escrowBalance = useAppSelector((state) => state.market.merchantEscrowBalance);
+  const bankDetails = useAppSelector((state) => state.user.merchant.bankDetails);
+  const profilePic = useAppSelector((state) => state.user.merchant.avatar);
+  const isProfileComplete = useAppSelector((state) => state.user.merchant.isVerified);
+  const merchantId = useAppSelector((state) => state.user.merchant.id);
+
   // Store & Sourcing states
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [escrowBalance, setEscrowBalance] = useState(250000);
   const [selectedListing, setSelectedListing] = useState<FarmerListing | null>(null);
   const [procureQuantity, setProcureQuantity] = useState<number>(50);
 
-  // Profile completion states
-  const [bankDetails, setBankDetails] = useState<{ accountNum: string; ifsc: string; bankName: string } | null>(null);
-  const [profilePic, setProfilePic] = useState<string | null>(null);
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [isPicModalOpen, setIsPicModalOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -238,19 +244,18 @@ export default function MerchantDashboard() {
       alert("Please enter valid account and IFSC details.");
       return;
     }
-    setBankDetails({ bankName: bankNameForm, accountNum: accountNumForm, ifsc: ifscForm });
+    dispatch(updateMerchantBank({ bankName: bankNameForm, accountNum: accountNumForm, ifsc: ifscForm }));
     setIsBankModalOpen(false);
     alert("Bank details linked successfully!");
   };
 
   const handleAvatarSelect = (avatarEmoji: string) => {
-    setProfilePic(avatarEmoji);
+    dispatch(updateMerchantAvatar(avatarEmoji));
     setIsPicModalOpen(false);
     alert("Profile picture updated!");
   };
 
   const profileProgress = 60 + (profilePic ? 20 : 0) + (bankDetails ? 20 : 0);
-  const isProfileComplete = profileProgress === 100;
 
   // Filters logic
   const filteredListings = farmerListings.filter((listing) => {
@@ -283,26 +288,9 @@ export default function MerchantDashboard() {
     }
 
     // Deduct cost and update available quantity
-    setEscrowBalance((prev) => prev - cost);
-    setFarmerListings((prev) =>
-      prev.map((item) =>
-        item.id === selectedListing.id
-          ? { ...item, availableQuantity: item.availableQuantity - procureQuantity }
-          : item
-      )
-    );
+    dispatch(procureProduce({ listingId: selectedListing.id, quantity: procureQuantity }));
 
-    // Create a new shipment
     const tonnage = procureQuantity / 10; // 1 Ton = 10 Qt
-    const newShipment: Shipment = {
-      id: "S" + (shipments.length + 1),
-      cropName: selectedListing.cropName,
-      mandiSource: selectedListing.mandiSource,
-      tonnage: tonnage,
-      logisticsStatus: "Dispatching",
-    };
-    setShipments((prev) => [newShipment, ...prev]);
-
     alert(`Sourcing Contract Locked! ₹${cost.toLocaleString()} secured in escrow for ${tonnage} Tons of ${selectedListing.cropName} from ${selectedListing.farmerName}.`);
     setSelectedListing(null);
   };

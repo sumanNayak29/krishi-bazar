@@ -3,6 +3,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@mui/material";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { acceptBid, rejectBid } from "@/store/marketSlice";
+import { updateFarmerBank, updateFarmerAvatar } from "@/store/userSlice";
 
 interface Listing {
   id: string;
@@ -21,24 +24,29 @@ interface Bid {
   status: "Pending" | "Accepted" | "Rejected";
 }
 
-const initialListings: Listing[] = [
-  { id: "L1", cropName: "Premium Sharbati Wheat", acreage: 5, expectedPrice: 2450, status: "Listed" },
-  { id: "L2", cropName: "Super Basmati Paddy", acreage: 8, expectedPrice: 4120, status: "Pending Sourcing" },
-  { id: "L3", cropName: "Organic Cold-Storage Potatoes", acreage: 3, expectedPrice: 1500, status: "Sold" },
-];
-
-const initialBids: Bid[] = [
-  { id: "B1", buyerName: "Sharma Traders Pvt Ltd", cropName: "Premium Sharbati Wheat", priceOffered: 2430, quantity: 150, status: "Pending" },
-  { id: "B2", buyerName: "Basundhara Millers Ltd", cropName: "Super Basmati Paddy", priceOffered: 4150, quantity: 200, status: "Pending" },
-];
-
 export default function FarmerDashboard() {
-  const [listings, setListings] = useState<Listing[]>(initialListings);
-  const [bids, setBids] = useState<Bid[]>(initialBids);
+  const dispatch = useAppDispatch();
 
-  // Profile completion states
-  const [bankDetails, setBankDetails] = useState<{ accountNum: string; ifsc: string; bankName: string } | null>(null);
-  const [profilePic, setProfilePic] = useState<string | null>(null);
+  // Redux Selectors
+  const rawListings = useAppSelector((state) => state.market.listings);
+  const bids = useAppSelector((state) => state.market.bids);
+  const bankDetails = useAppSelector((state) => state.user.farmer.bankDetails);
+  const profilePic = useAppSelector((state) => state.user.farmer.avatar);
+  const isProfileComplete = useAppSelector((state) => state.user.farmer.isVerified);
+  const totalSales = useAppSelector((state) => state.market.farmerTotalSales);
+  const pendingPayouts = useAppSelector((state) => state.market.farmerPendingPayouts);
+
+  // Map global listings to farmer listings
+  const listings: Listing[] = rawListings
+    .filter((l) => l.farmerName === "Rajesh Kumar")
+    .map((l) => ({
+      id: l.id,
+      cropName: l.cropName,
+      acreage: l.availableQuantity > 0 ? Math.ceil(l.availableQuantity / 50) : 3,
+      expectedPrice: l.expectedPrice,
+      status: l.availableQuantity > 0 ? "Listed" : "Sold",
+    }));
+
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [isPicModalOpen, setIsPicModalOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -49,16 +57,12 @@ export default function FarmerDashboard() {
   const [ifscForm, setIfscForm] = useState("");
 
   const handleAcceptBid = (bidId: string) => {
-    setBids((prev) =>
-      prev.map((b) => (b.id === bidId ? { ...b, status: "Accepted" } : b))
-    );
+    dispatch(acceptBid(bidId));
     alert("Bid Accepted successfully! Payout escrow is now locked.");
   };
 
   const handleRejectBid = (bidId: string) => {
-    setBids((prev) =>
-      prev.map((b) => (b.id === bidId ? { ...b, status: "Rejected" } : b))
-    );
+    dispatch(rejectBid(bidId));
     alert("Bid rejected successfully.");
   };
 
@@ -68,19 +72,18 @@ export default function FarmerDashboard() {
       alert("Please enter valid account and IFSC details.");
       return;
     }
-    setBankDetails({ bankName: bankNameForm, accountNum: accountNumForm, ifsc: ifscForm });
+    dispatch(updateFarmerBank({ bankName: bankNameForm, accountNum: accountNumForm, ifsc: ifscForm }));
     setIsBankModalOpen(false);
     alert("Bank details linked successfully!");
   };
 
   const handleAvatarSelect = (avatarEmoji: string) => {
-    setProfilePic(avatarEmoji);
+    dispatch(updateFarmerAvatar(avatarEmoji));
     setIsPicModalOpen(false);
     alert("Profile picture updated!");
   };
 
   const profileProgress = 60 + (profilePic ? 20 : 0) + (bankDetails ? 20 : 0);
-  const isProfileComplete = profileProgress === 100;
 
   return (
     <div className="min-h-screen flex flex-col bg-brand-bg-main relative overflow-hidden">
@@ -177,7 +180,7 @@ export default function FarmerDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="bg-white p-5 rounded-2xl border border-brand-border-light shadow-md">
               <span className="text-[10px] text-brand-text-muted uppercase tracking-wider font-bold">Total Sales</span>
-              <div className="text-2xl font-extrabold text-[#1aa35a] mt-1">₹48,250</div>
+              <div className="text-2xl font-extrabold text-[#1aa35a] mt-1">₹{totalSales.toLocaleString()}</div>
               <p className="text-[10px] text-green-500 font-semibold mt-1">↑ 12.4% from last week</p>
             </div>
             <div className="bg-white p-5 rounded-2xl border border-brand-border-light shadow-md">
@@ -187,7 +190,7 @@ export default function FarmerDashboard() {
             </div>
             <div className="bg-white p-5 rounded-2xl border border-brand-border-light shadow-md">
               <span className="text-[10px] text-brand-text-muted uppercase tracking-wider font-bold">Pending Payouts</span>
-              <div className="text-2xl font-extrabold text-brand-secondary mt-1">₹18,500</div>
+              <div className="text-2xl font-extrabold text-brand-secondary mt-1">₹{pendingPayouts.toLocaleString()}</div>
               <p className="text-[10px] text-brand-text-secondary font-semibold mt-1">Locked in escrow security</p>
             </div>
           </div>
