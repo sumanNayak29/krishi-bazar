@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "@/store";
+
 import { acceptBid, rejectBid, addFarmerListing } from "@/store/marketSlice";
 import { updateFarmerBank, updateFarmerAvatar } from "@/store/userSlice";
 
@@ -169,52 +170,52 @@ export default function FarmerDashboard() {
 
           {/* Profile Dropdown */}
           <div className="relative" ref={profileMenuRef}>
-            <button 
+            <button
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white border border-brand-border-light flex items-center justify-center text-lg font-bold shadow-md cursor-pointer hover:scale-105 transition-all"
             >
               {profilePic || "👨🏽‍🌾"}
             </button>
-            
+
             {isProfileMenuOpen && (
               <div className="absolute right-0 mt-2.5 w-60 bg-white border border-gray-150 rounded-2xl p-4 shadow-xl z-50 flex flex-col gap-3.5 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
-                    <span className="text-2xl">{profilePic || "👨🏽‍🌾"}</span>
-                    <div className="flex flex-col min-w-0">
-                      <span className="font-extrabold text-xs text-gray-800 truncate">Rajesh Kumar</span>
-                      <span className="text-[10px] text-gray-500 font-semibold truncate">KB-2026-4892-1925</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-2.5 text-xs text-gray-700">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500">Status</span>
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isProfileComplete ? "bg-green-50 text-green-600 border border-green-100" : "bg-gray-50 text-gray-500 border border-gray-200"}`}>
-                        {isProfileComplete ? "Verified" : "Unverified"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500">Bank Linked</span>
-                      <span className="font-semibold">{bankDetails ? "Yes" : "No"}</span>
-                    </div>
-                  </div>
-                  <div className="border-t border-gray-100 pt-2.5 flex flex-col gap-1.5">
-                    <button 
-                      onClick={() => { setIsProfileMenuOpen(false); if (!bankDetails) setIsBankModalOpen(true); }}
-                      className="text-left w-full text-xs font-semibold text-[#1aa35a] hover:underline"
-                    >
-                      {bankDetails ? "Modify Bank Account" : "Link Bank Account"}
-                    </button>
-                    <button 
-                      onClick={() => { setIsProfileMenuOpen(false); setIsPicModalOpen(true); }}
-                      className="text-left w-full text-xs font-semibold text-[#1aa35a] hover:underline"
-                    >
-                      Change Avatar
-                    </button>
-                    <Link href="/" className="text-left w-full text-xs font-semibold text-red-500 hover:underline">
-                      Log Out
-                    </Link>
+                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                  <span className="text-2xl">{profilePic || "👨🏽‍🌾"}</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-extrabold text-xs text-gray-800 truncate">Rajesh Kumar</span>
+                    <span className="text-[10px] text-gray-500 font-semibold truncate">KB-2026-4892-1925</span>
                   </div>
                 </div>
+                <div className="flex flex-col gap-2.5 text-xs text-gray-700">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Status</span>
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isProfileComplete ? "bg-green-50 text-green-600 border border-green-100" : "bg-gray-50 text-gray-500 border border-gray-200"}`}>
+                      {isProfileComplete ? "Verified" : "Unverified"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Bank Linked</span>
+                    <span className="font-semibold">{bankDetails ? "Yes" : "No"}</span>
+                  </div>
+                </div>
+                <div className="border-t border-gray-100 pt-2.5 flex flex-col gap-1.5">
+                  <button
+                    onClick={() => { setIsProfileMenuOpen(false); if (!bankDetails) setIsBankModalOpen(true); }}
+                    className="text-left w-full text-xs font-semibold text-[#1aa35a] hover:underline"
+                  >
+                    {bankDetails ? "Modify Bank Account" : "Link Bank Account"}
+                  </button>
+                  <button
+                    onClick={() => { setIsProfileMenuOpen(false); setIsPicModalOpen(true); }}
+                    className="text-left w-full text-xs font-semibold text-[#1aa35a] hover:underline"
+                  >
+                    Change Avatar
+                  </button>
+                  <Link href="/" className="text-left w-full text-xs font-semibold text-red-500 hover:underline">
+                    Log Out
+                  </Link>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -222,10 +223,10 @@ export default function FarmerDashboard() {
 
       {/* Dashboard Content */}
       <main className="flex-grow max-w-[1400px] mx-auto w-full px-[5%] py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 z-10">
-        
+
         {/* Left Section: Stats, Listings, Bids */}
         <div className="lg:col-span-8 flex flex-col gap-8">
-          
+
           {/* Header */}
           <div>
             <h1 className="text-3xl font-extrabold font-outfit text-gray-800 tracking-tight">Farmer Workspace</h1>
@@ -270,18 +271,18 @@ export default function FarmerDashboard() {
                   <div className="flex gap-2 self-end sm:self-center">
                     {bid.status === "Pending" ? (
                       <>
-                        <Button 
-                          onClick={() => handleRejectBid(bid.id)} 
-                          variant="outlined" 
+                        <Button
+                          onClick={() => handleRejectBid(bid.id)}
+                          variant="outlined"
                           size="small"
                           color="error"
                           sx={{ textTransform: "none", fontSize: "0.75rem", borderRadius: "8px", fontWeight: 600 }}
                         >
                           Decline
                         </Button>
-                        <Button 
-                          onClick={() => handleAcceptBid(bid.id)} 
-                          variant="contained" 
+                        <Button
+                          onClick={() => handleAcceptBid(bid.id)}
+                          variant="contained"
                           size="small"
                           sx={{ textTransform: "none", fontSize: "0.75rem", borderRadius: "8px", color: "#fff", backgroundColor: "#1aa35a", "&:hover": { backgroundColor: "#15803d" }, fontWeight: 600 }}
                         >
@@ -289,11 +290,10 @@ export default function FarmerDashboard() {
                         </Button>
                       </>
                     ) : (
-                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
-                        bid.status === "Accepted" 
-                          ? "text-green-600 bg-green-50 border-green-200" 
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${bid.status === "Accepted"
+                          ? "text-green-600 bg-green-50 border-green-200"
                           : "text-red-600 bg-red-50 border-red-200"
-                      }`}>
+                        }`}>
                         {bid.status}
                       </span>
                     )}
@@ -347,11 +347,10 @@ export default function FarmerDashboard() {
                   return (
                     <div key={listing.id} className="relative border border-gray-150 rounded-2xl p-4 bg-gradient-to-br from-gray-50 to-white hover:shadow-md transition-all duration-200 flex flex-col gap-3">
                       {/* Status badge */}
-                      <span className={`absolute top-3 right-3 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                        listing.status === "Listed" ? "text-emerald-600 bg-emerald-50 border-emerald-200"
-                        : listing.status === "Pending Sourcing" ? "text-amber-600 bg-amber-50 border-amber-200"
-                        : "text-gray-500 bg-gray-100 border-gray-200"
-                      }`}>{listing.status}</span>
+                      <span className={`absolute top-3 right-3 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${listing.status === "Listed" ? "text-emerald-600 bg-emerald-50 border-emerald-200"
+                          : listing.status === "Pending Sourcing" ? "text-amber-600 bg-amber-50 border-amber-200"
+                            : "text-gray-500 bg-gray-100 border-gray-200"
+                        }`}>{listing.status}</span>
 
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center text-2xl">
@@ -400,18 +399,18 @@ export default function FarmerDashboard() {
 
         {/* Right Section: Krishi Card & Mandi Spot Prices */}
         <div className="lg:col-span-4 flex flex-col gap-8">
-          
+
           {/* Profile Progress Card */}
           <div className="bg-white border border-brand-border-light rounded-2xl p-6 shadow-md flex flex-col gap-4">
             <h2 className="text-sm font-bold text-gray-800 font-outfit">Verification Progress</h2>
-            
+
             <div className="flex flex-col gap-2.5">
               <div className="flex justify-between items-center text-xs font-bold">
                 <span className="text-gray-500">Profile Progress</span>
                 <span className={isProfileComplete ? "text-green-600" : "text-[#d97706]"}>{profileProgress}%</span>
               </div>
               <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                <div 
+                <div
                   className={`h-full transition-all duration-500 ${isProfileComplete ? "bg-green-600" : "bg-[#d97706]"}`}
                   style={{ width: `${profileProgress}%` }}
                 />
@@ -433,7 +432,7 @@ export default function FarmerDashboard() {
                 {profilePic ? (
                   <span className="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-100">Uploaded</span>
                 ) : (
-                  <button 
+                  <button
                     onClick={() => setIsPicModalOpen(true)}
                     className="text-[10px] text-brand-primary hover:underline font-bold bg-emerald-50 hover:bg-emerald-100/50 px-2.5 py-1 rounded border border-emerald-100/50 transition-all cursor-pointer"
                   >
@@ -449,7 +448,7 @@ export default function FarmerDashboard() {
                 {bankDetails ? (
                   <span className="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-100">Linked</span>
                 ) : (
-                  <button 
+                  <button
                     onClick={() => setIsBankModalOpen(true)}
                     className="text-[10px] text-brand-primary hover:underline font-bold bg-emerald-50 hover:bg-emerald-100/50 px-2.5 py-1 rounded border border-emerald-100/50 transition-all cursor-pointer"
                   >
@@ -458,7 +457,7 @@ export default function FarmerDashboard() {
                 )}
               </div>
             </div>
-            
+
             {!isProfileComplete && (
               <p className="text-[10px] text-brand-text-muted mt-0.5">
                 ⚠ Link your bank account and upload a profile picture to earn the verified badge.
@@ -469,7 +468,7 @@ export default function FarmerDashboard() {
           {/* Virtual Krishi Card Preview */}
           <div className="bg-white border border-brand-border-light rounded-2xl p-6 shadow-md flex flex-col gap-4">
             <h2 className="text-sm font-bold text-gray-800 font-outfit">Virtual Digital Pass</h2>
-            
+
             <div className="w-full bg-gradient-to-br from-[#1aa35a] to-[#0f5230] border border-emerald-500/20 rounded-2xl p-5 text-left relative overflow-hidden shadow-md">
               <div className="flex justify-between items-center border-b border-white/10 pb-2 mb-4">
                 <span className="flex items-center gap-1.5 font-bold font-outfit text-white text-xs">
@@ -485,7 +484,7 @@ export default function FarmerDashboard() {
                   </span>
                 )}
               </div>
-              
+
               <div className="flex justify-between items-center gap-2">
                 <div className="flex flex-col gap-2 text-[10px] text-white flex-grow">
                   <div className="flex flex-col">
@@ -565,7 +564,7 @@ export default function FarmerDashboard() {
               <h3 className="text-lg font-extrabold font-outfit text-gray-900">Link Bank Account</h3>
               <p className="text-[11px] text-gray-500 mt-1">Needed for processing direct-to-farmer payouts via escrow security.</p>
             </div>
-            
+
             <form onSubmit={handleBankSubmit} className="flex flex-col gap-4 text-xs font-semibold text-gray-600">
               <div className="flex flex-col gap-1">
                 <label>Bank Name</label>
@@ -600,7 +599,7 @@ export default function FarmerDashboard() {
                 />
                 {bankFormErrors.ifsc && <p className="text-red-500 text-[10px] font-semibold mt-0.5">{bankFormErrors.ifsc}</p>}
               </div>
-              
+
               <div className="flex gap-3 mt-2">
                 <Button
                   onClick={() => setIsBankModalOpen(false)}
@@ -636,7 +635,7 @@ export default function FarmerDashboard() {
               <h3 className="text-lg font-extrabold font-outfit text-gray-900">Select Profile Avatar</h3>
               <p className="text-[11px] text-gray-500 mt-1">Select an identity avatar representing your workspace profile.</p>
             </div>
-            
+
             <div className="grid grid-cols-4 gap-4 py-4 justify-items-center">
               {["👨🏽‍🌾", "👩🏽‍🌾", "🧑🏽‍🌾", "👵🏽", "🌾", "🚜", "☀️", "🏡"].map((avatar) => (
                 <button
