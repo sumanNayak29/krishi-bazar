@@ -105,6 +105,136 @@ const initialFarmerListings: FarmerListing[] = [
     }
   },
   { 
+    id: "F7", 
+    farmerName: "Rajesh Kumar", 
+    cropName: "Organic Alphonso Mangoes", 
+    category: "Fruits", 
+    expectedPrice: 4500, 
+    availableQuantity: 120, 
+    mandiSource: "Ratnagiri APMC", 
+    grade: "A+", 
+    imageEmoji: "🥭",
+    farmerProfile: {
+      age: 42,
+      memberSince: "March 2021",
+      rating: 4.8,
+      completedTrades: 85,
+      fulfillmentRate: 98,
+      verifiedLand: true
+    },
+    productSpecs: {
+      moisture: "15.0%",
+      admixture: "< 0.1%",
+      grainSize: "Grade A Large",
+      organic: true,
+      harvestDate: "May 2026"
+    }
+  },
+  { 
+    id: "F8", 
+    farmerName: "Rajesh Kumar", 
+    cropName: "Golden Turmeric Bulbs", 
+    category: "Spices & Condiments", 
+    expectedPrice: 7200, 
+    availableQuantity: 90, 
+    mandiSource: "Sangli APMC", 
+    grade: "A", 
+    imageEmoji: "🫚",
+    farmerProfile: {
+      age: 42,
+      memberSince: "March 2021",
+      rating: 4.8,
+      completedTrades: 85,
+      fulfillmentRate: 98,
+      verifiedLand: true
+    },
+    productSpecs: {
+      moisture: "9.0%",
+      admixture: "< 0.5%",
+      grainSize: "High Curcumin",
+      organic: true,
+      harvestDate: "April 2026"
+    }
+  },
+  { 
+    id: "F9", 
+    farmerName: "Rajesh Kumar", 
+    cropName: "Sona Masoori Raw Rice", 
+    category: "Grains & Cereals", 
+    expectedPrice: 3600, 
+    availableQuantity: 300, 
+    mandiSource: "Raichur APMC", 
+    grade: "A", 
+    imageEmoji: "🌾",
+    farmerProfile: {
+      age: 42,
+      memberSince: "March 2021",
+      rating: 4.8,
+      completedTrades: 85,
+      fulfillmentRate: 98,
+      verifiedLand: true
+    },
+    productSpecs: {
+      moisture: "12.0%",
+      admixture: "< 0.4%",
+      grainSize: "Fine Grain",
+      organic: false,
+      harvestDate: "May 2026"
+    }
+  },
+  { 
+    id: "F10", 
+    farmerName: "Rajesh Kumar", 
+    cropName: "Premium Black Pepper", 
+    category: "Spices & Condiments", 
+    expectedPrice: 48000, 
+    availableQuantity: 30, 
+    mandiSource: "Kochi APMC", 
+    grade: "A+", 
+    imageEmoji: "🫘",
+    farmerProfile: {
+      age: 42,
+      memberSince: "March 2021",
+      rating: 4.8,
+      completedTrades: 85,
+      fulfillmentRate: 98,
+      verifiedLand: true
+    },
+    productSpecs: {
+      moisture: "10.5%",
+      admixture: "< 0.2%",
+      grainSize: "5mm Bold",
+      organic: true,
+      harvestDate: "March 2026"
+    }
+  },
+  { 
+    id: "F11", 
+    farmerName: "Rajesh Kumar", 
+    cropName: "Desi Chana (Chickpeas)", 
+    category: "Pulses & Legumes", 
+    expectedPrice: 5100, 
+    availableQuantity: 200, 
+    mandiSource: "Nagpur APMC", 
+    grade: "A", 
+    imageEmoji: "🫘",
+    farmerProfile: {
+      age: 42,
+      memberSince: "March 2021",
+      rating: 4.8,
+      completedTrades: 85,
+      fulfillmentRate: 98,
+      verifiedLand: true
+    },
+    productSpecs: {
+      moisture: "11.0%",
+      admixture: "< 0.6%",
+      grainSize: "Medium Bold",
+      organic: false,
+      harvestDate: "April 2026"
+    }
+  },
+  { 
     id: "F2", 
     farmerName: "Gurpreet Singh", 
     cropName: "Super Basmati Paddy", 
