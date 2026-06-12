@@ -234,6 +234,9 @@ export default function MerchantDashboard() {
   const profilePic = useAppSelector((state) => state.user.merchant.avatar);
   const isProfileComplete = useAppSelector((state) => state.user.merchant.isVerified);
   const merchantId = useAppSelector((state) => state.user.merchant.id);
+  const merchantName = useAppSelector((state) => state.user.merchant.name);
+  const merchantRegion = useAppSelector((state) => state.user.merchant.region);
+  const currentFarmerName = useAppSelector((state) => state.user.farmer.name);
 
   // Store & Sourcing states
   const [searchTerm, setSearchTerm] = useState("");
@@ -318,7 +321,7 @@ export default function MerchantDashboard() {
     }
 
     // Deduct cost and update available quantity
-    dispatch(procureProduce({ listingId: selectedListing.id, quantity: procureQuantity }));
+    dispatch(procureProduce({ listingId: selectedListing.id, quantity: procureQuantity, currentFarmerName }));
 
     const tonnage = procureQuantity / 10; // 1 Ton = 10 Qt
     alert(`Sourcing Contract Locked! ₹${cost.toLocaleString()} secured in escrow for ${tonnage} Tons of ${selectedListing.cropName} from ${selectedListing.farmerName}.`);
@@ -377,7 +380,7 @@ export default function MerchantDashboard() {
                   <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
                     <span className="text-2xl">{profilePic || "🏢"}</span>
                     <div className="flex flex-col min-w-0">
-                      <span className="font-extrabold text-xs text-gray-800 truncate">Sharma Agro Traders</span>
+                      <span className="font-extrabold text-xs text-gray-800 truncate">{merchantName}</span>
                       <span className="text-[10px] text-gray-500 font-semibold truncate">{merchantId}</span>
                     </div>
                   </div>
@@ -701,7 +704,7 @@ export default function MerchantDashboard() {
                 <div className="flex flex-col gap-2 text-[10px] text-white flex-grow">
                   <div className="flex flex-col">
                     <span className="text-[7px] text-emerald-200 uppercase font-bold">Representative Name</span>
-                    <span className="font-bold">Sharma Agro Traders</span>
+                    <span className="font-bold">{merchantName}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[7px] text-emerald-200 uppercase font-bold">Buyer ID</span>
@@ -709,7 +712,7 @@ export default function MerchantDashboard() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[7px] text-emerald-200 uppercase font-bold">Sourcing Region</span>
-                    <span>Indore, Madhya Pradesh</span>
+                    <span>{merchantRegion}</span>
                   </div>
                 </div>
 

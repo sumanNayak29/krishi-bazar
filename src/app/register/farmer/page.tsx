@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 import { ArrowBackIcon, GoogleIcon } from "@/icons";
 import { useSharedGoogleLogin } from "@/hooks/useSharedGoogleLogin";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { setFarmerProfile } from "@/store/userSlice";
 
 const FALLBACK_STATES_DATA = [
   {
@@ -55,6 +57,8 @@ const initialFormState: FormState = {
 };
 
 export default function FarmerRegistrationPage() {
+  const dispatch = useAppDispatch();
+  const farmerProfile = useAppSelector((state) => state.user.farmer);
   const [isLoginMode, setIsLoginMode] = useState<boolean>(true); // Defaults directly to Login card
   const [isRegistered, setIsRegistered] = useState<boolean>(false);
   const [form, setForm] = useState<FormState>(initialFormState);
@@ -134,6 +138,15 @@ export default function FarmerRegistrationPage() {
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      const userRegion = `${form.district}, ${form.state}`;
+      const generatedId = "KB-2026-" + (form.phone ? form.phone.substring(6) : "4892") + "-" + cardIdSuffix;
+      
+      dispatch(setFarmerProfile({
+        name: form.fullName,
+        region: userRegion,
+        id: generatedId,
+        avatar: "👨🏽‍🌾",
+      }));
       setIsRegistered(true);
     }
   };
@@ -157,6 +170,16 @@ export default function FarmerRegistrationPage() {
 
     setGoogleErrors(errs);
     if (Object.keys(errs).length === 0 && googleUserInfo) {
+      const userRegion = `${googleDistrict}, ${googleState}`;
+      const generatedId = "KB-2026-" + (form.phone ? form.phone.substring(6) : "4892") + "-" + cardIdSuffix;
+      
+      dispatch(setFarmerProfile({
+        name: googleUserInfo.name,
+        region: userRegion,
+        id: generatedId,
+        avatar: googleUserInfo.picture || "👨🏽‍🌾",
+      }));
+
       setForm((prev) => ({
         ...prev,
         fullName: googleUserInfo.name,
@@ -528,7 +551,7 @@ export default function FarmerRegistrationPage() {
           <div className="w-full p-8 sm:p-16 flex flex-col items-center text-center gap-6 bg-white text-gray-800">
             <div className="text-5xl">🎉</div>
             <div>
-              <h2 className="text-2xl font-extrabold font-outfit text-[#1aa35a] mb-1">Welcome Back!</h2>
+              <h2 className="text-2xl font-extrabold font-outfit text-[#1aa35a] mb-1">Welcome Back, {farmerProfile.name}!</h2>
               <p className="text-sm text-gray-500">Authenticated as <span className="text-gray-900 font-semibold">{loginEmail}</span></p>
             </div>
 
@@ -539,7 +562,11 @@ export default function FarmerRegistrationPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-xs text-gray-500 font-semibold">Farmer ID</span>
-                <span className="text-xs font-bold font-mono text-gray-800">KB-2026-4892-1925</span>
+                <span className="text-xs font-bold font-mono text-gray-800">{farmerProfile.id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-xs text-gray-500 font-semibold">Region</span>
+                <span className="text-xs font-bold text-gray-800">{farmerProfile.region}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-xs text-gray-500 font-semibold">Status</span>

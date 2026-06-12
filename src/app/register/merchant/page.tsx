@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 import { ArrowBackIcon, GoogleIcon } from "@/icons";
 import { useSharedGoogleLogin } from "@/hooks/useSharedGoogleLogin";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { setMerchantProfile } from "@/store/userSlice";
 
 const FALLBACK_STATES_DATA = [
   {
@@ -54,6 +56,8 @@ const initialFormState: FormState = {
 };
 
 export default function MerchantRegistrationPage() {
+  const dispatch = useAppDispatch();
+  const merchantProfile = useAppSelector((state) => state.user.merchant);
   const [isLoginMode, setIsLoginMode] = useState<boolean>(true);
   const [isRegistered, setIsRegistered] = useState<boolean>(false);
   const [form, setForm] = useState<FormState>(initialFormState);
@@ -112,6 +116,16 @@ export default function MerchantRegistrationPage() {
 
     setGoogleErrors(errs);
     if (Object.keys(errs).length === 0 && googleUserInfo) {
+      const userRegion = `${googleDistrict}, ${googleState}`;
+      const generatedId = "KB-BUY-" + (form.phone ? form.phone.substring(6) : "5798") + "-" + cardIdSuffix;
+
+      dispatch(setMerchantProfile({
+        name: googleUserInfo.name,
+        region: userRegion,
+        id: generatedId,
+        avatar: googleUserInfo.picture || "🏢",
+      }));
+
       setForm((prev) => ({
         ...prev,
         fullName: googleUserInfo.name,
@@ -165,6 +179,15 @@ export default function MerchantRegistrationPage() {
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      const userRegion = `${form.district}, ${form.state}`;
+      const generatedId = "KB-BUY-" + (form.phone ? form.phone.substring(6) : "5798") + "-" + cardIdSuffix;
+
+      dispatch(setMerchantProfile({
+        name: form.fullName,
+        region: userRegion,
+        id: generatedId,
+        avatar: "🏢",
+      }));
       setIsRegistered(true);
     }
   };
@@ -529,7 +552,7 @@ export default function MerchantRegistrationPage() {
           <div className="w-full p-8 sm:p-16 flex flex-col items-center text-center gap-6 bg-white text-gray-800">
             <div className="text-5xl">🎉</div>
             <div>
-              <h2 className="text-2xl font-extrabold font-outfit text-[#1aa35a] mb-1">Welcome Back!</h2>
+              <h2 className="text-2xl font-extrabold font-outfit text-[#1aa35a] mb-1">Welcome Back, {merchantProfile.name}!</h2>
               <p className="text-sm text-gray-500">Authenticated as <span className="text-gray-900 font-semibold">{loginEmail}</span></p>
             </div>
             
@@ -540,7 +563,11 @@ export default function MerchantRegistrationPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-xs text-gray-500 font-semibold">Buyer ID</span>
-                <span className="text-xs font-bold font-mono text-gray-800">KB-BUY-7940-1925</span>
+                <span className="text-xs font-bold font-mono text-gray-800">{merchantProfile.id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-xs text-gray-500 font-semibold">Region</span>
+                <span className="text-xs font-bold text-gray-800">{merchantProfile.region}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-xs text-gray-500 font-semibold">Status</span>

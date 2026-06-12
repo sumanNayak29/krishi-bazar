@@ -63,13 +63,27 @@ const userSlice = createSlice({
       state.merchant.avatar = action.payload;
       state.merchant.isVerified = !!(state.merchant.bankDetails && action.payload);
     },
-    setFarmerProfile(state, action: PayloadAction<{ name: string; region: string }>) {
+    setFarmerProfile(state, action: PayloadAction<{ name: string; region: string; id?: string; avatar?: string | null }>) {
       state.farmer.name = action.payload.name;
       state.farmer.region = action.payload.region;
+      if (action.payload.id) {
+        state.farmer.id = action.payload.id;
+      }
+      if (action.payload.avatar !== undefined) {
+        state.farmer.avatar = action.payload.avatar;
+      }
+      state.farmer.isVerified = !!(state.farmer.avatar && state.farmer.bankDetails);
     },
-    setMerchantProfile(state, action: PayloadAction<{ name: string; region: string }>) {
+    setMerchantProfile(state, action: PayloadAction<{ name: string; region: string; id?: string; avatar?: string | null }>) {
       state.merchant.name = action.payload.name;
       state.merchant.region = action.payload.region;
+      if (action.payload.id) {
+        state.merchant.id = action.payload.id;
+      }
+      if (action.payload.avatar !== undefined) {
+        state.merchant.avatar = action.payload.avatar;
+      }
+      state.merchant.isVerified = !!(state.merchant.avatar && state.merchant.bankDetails);
     },
   },
 });

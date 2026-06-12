@@ -411,8 +411,8 @@ const marketSlice = createSlice({
         bid.status = "Rejected";
       }
     },
-    procureProduce(state, action: PayloadAction<{ listingId: string; quantity: number }>) {
-      const { listingId, quantity } = action.payload;
+    procureProduce(state, action: PayloadAction<{ listingId: string; quantity: number; currentFarmerName?: string }>) {
+      const { listingId, quantity, currentFarmerName } = action.payload;
       const listing = state.listings.find((l) => l.id === listingId);
       if (listing) {
         const cost = listing.expectedPrice * quantity;
@@ -430,15 +430,16 @@ const marketSlice = createSlice({
             tonnage: quantity / 10,
             logisticsStatus: "Dispatching",
           });
-          // Update farmer side if listing belongs to our main farmer (Rajesh Kumar)
-          if (listing.farmerName === "Rajesh Kumar") {
+          // Update farmer side if listing belongs to our main farmer
+          const targetFarmer = currentFarmerName || "Rajesh Kumar";
+          if (listing.farmerName === targetFarmer) {
             state.farmerTotalSales += cost;
             state.farmerPendingPayouts += cost;
           }
         }
       }
     },
-    addFarmerListing(state, action: PayloadAction<Omit<FarmerListing, "farmerName" | "farmerProfile" | "productSpecs" | "imageEmoji" | "grade">>) {
+    addFarmerListing(state, action: PayloadAction<Omit<FarmerListing, "farmerProfile" | "productSpecs" | "imageEmoji" | "grade">>) {
       const categoryEmojiMap: Record<string, string> = {
         "Grains & Cereals": "🌾",
         "Oilseeds": "🌻",
@@ -455,7 +456,6 @@ const marketSlice = createSlice({
       };
       const newListing: FarmerListing = {
         ...action.payload,
-        farmerName: "Rajesh Kumar",
         grade: "A+",
         imageEmoji: categoryEmojiMap[action.payload.category] ?? "🌾",
         farmerProfile: {

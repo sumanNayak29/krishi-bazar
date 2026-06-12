@@ -36,10 +36,13 @@ export default function FarmerDashboard() {
   const isProfileComplete = useAppSelector((state) => state.user.farmer.isVerified);
   const totalSales = useAppSelector((state) => state.market.farmerTotalSales);
   const pendingPayouts = useAppSelector((state) => state.market.farmerPendingPayouts);
+  const farmerName = useAppSelector((state) => state.user.farmer.name);
+  const farmerId = useAppSelector((state) => state.user.farmer.id);
+  const farmerRegion = useAppSelector((state) => state.user.farmer.region);
 
   // Map global listings to farmer listings
   const listings: Listing[] = rawListings
-    .filter((l) => l.farmerName === "Rajesh Kumar")
+    .filter((l) => l.farmerName === farmerName)
     .map((l) => ({
       id: l.id,
       cropName: l.cropName,
@@ -139,6 +142,7 @@ export default function FarmerDashboard() {
       expectedPrice: Number(newPrice),
       availableQuantity: Number(newQuantity),
       mandiSource: newMandi.trim(),
+      farmerName,
     }));
     setNewCropName(""); setNewCategory("Grains & Cereals"); setNewPrice(""); setNewQuantity(""); setNewMandi("");
     setIsListingModalOpen(false);
@@ -182,8 +186,8 @@ export default function FarmerDashboard() {
                 <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
                   <span className="text-2xl">{profilePic || "👨🏽‍🌾"}</span>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-extrabold text-xs text-gray-800 truncate">Rajesh Kumar</span>
-                    <span className="text-[10px] text-gray-500 font-semibold truncate">KB-2026-4892-1925</span>
+                    <span className="font-extrabold text-xs text-gray-800 truncate">{farmerName}</span>
+                    <span className="text-[10px] text-gray-500 font-semibold truncate">{farmerId}</span>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2.5 text-xs text-gray-700">
@@ -489,15 +493,15 @@ export default function FarmerDashboard() {
                 <div className="flex flex-col gap-2 text-[10px] text-white flex-grow">
                   <div className="flex flex-col">
                     <span className="text-[7px] text-emerald-200 uppercase font-bold">Farmer Name</span>
-                    <span className="font-bold">Rajesh Kumar</span>
+                    <span className="font-bold">{farmerName}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[7px] text-emerald-200 uppercase font-bold">Farmer ID</span>
-                    <span className="font-mono text-[9px]">KB-2026-4892-1925</span>
+                    <span className="font-mono text-[9px]">{farmerId}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[7px] text-emerald-200 uppercase font-bold">Sourcing Region</span>
-                    <span>Indore, Madhya Pradesh</span>
+                    <span>{farmerRegion}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[7px] text-emerald-200 uppercase font-bold">Buyer Rating</span>
