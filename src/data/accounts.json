@@ -1,0 +1,75 @@
+[
+  {
+    "email": "farmer@krishibazar.com",
+    "password": "password123",
+    "role": "farmer",
+    "name": "Rajesh Kumar",
+    "id": "KB-2026-FARMER-DEMO",
+    "region": "Indore, Madhya Pradesh",
+    "rating": 4.8,
+    "trades": 85,
+    "avatar": "👨🏽‍🌾",
+    "bankDetails": null,
+    "isVerified": false
+  },
+  {
+    "email": "gurpreet.singh@krishibazar.com",
+    "password": "password123",
+    "role": "farmer",
+    "name": "Gurpreet Singh",
+    "id": "KB-2026-GURPREET-7489",
+    "region": "Karnal, Punjab",
+    "rating": 4.9,
+    "trades": 142,
+    "avatar": "👳🏽‍♂️",
+    "bankDetails": {
+      "bankName": "Punjab National Bank",
+      "accountNum": "987654321012",
+      "ifsc": "PUNB0123456"
+    },
+    "isVerified": true
+  },
+  {
+    "email": "ramesh.patel@krishibazar.com",
+    "password": "password123",
+    "role": "farmer",
+    "name": "Ramesh Patel",
+    "id": "KB-2026-RAMESH-2098",
+    "region": "Jaipur, Rajasthan",
+    "rating": 4.7,
+    "trades": 64,
+    "avatar": "🧑🏽‍🌾",
+    "bankDetails": null,
+    "isVerified": false
+  },
+  {
+    "email": "merchant@krishibazar.com",
+    "password": "password123",
+    "role": "merchant",
+    "name": "Sharma Agro Traders",
+    "id": "KB-BUY-MERCHANT-DEMO",
+    "region": "Indore, Madhya Pradesh",
+    "rating": 4.6,
+    "trades": 110,
+    "avatar": "🏢",
+    "bankDetails": null,
+    "isVerified": false
+  },
+  {
+    "email": "laxmi.grains@krishibazar.com",
+    "password": "password123",
+    "role": "merchant",
+    "name": "Laxmi Grain Distributors",
+    "id": "KB-BUY-LAXMI-5021",
+    "region": "Nagpur, Maharashtra",
+    "rating": 4.9,
+    "trades": 340,
+    "avatar": "🏭",
+    "bankDetails": {
+      "bankName": "State Bank of India",
+      "accountNum": "112233445566",
+      "ifsc": "SBIN0007890"
+    },
+    "isVerified": true
+  }
+]
