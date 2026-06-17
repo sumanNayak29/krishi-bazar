@@ -7,12 +7,14 @@ import {
   TextField,
   Select,
   MenuItem,
-  FormControl
+  FormControl,
+  IconButton,
+  InputAdornment
 } from "@mui/material";
-import { ArrowBackIcon, GoogleIcon } from "@/icons";
+import { ArrowBackIcon, GoogleIcon, Visibility, VisibilityOff } from "@/icons";
 import { useSharedGoogleLogin } from "@/hooks/useSharedGoogleLogin";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { setFarmerProfile } from "@/store/userSlice";
+import { setFarmerProfile, updateFarmerBank, updateFarmerAvatar } from "@/store/userSlice";
 
 const FALLBACK_STATES_DATA = [
   {
@@ -73,6 +75,16 @@ export default function FarmerRegistrationPage() {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [loginErrors, setLoginErrors] = useState<Partial<Record<"email" | "password", string>>>({});
 
+  // API mock database states
+  const [mockAccounts, setMockAccounts] = useState<any[]>([]);
+  const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Password visibility states
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+
   // Google login intermediate completion states
   const [googleUserInfo, setGoogleUserInfo] = useState<{ name: string; email: string; picture?: string } | null>(null);
   const [showGoogleComplete, setShowGoogleComplete] = useState(false);
@@ -95,6 +107,25 @@ export default function FarmerRegistrationPage() {
       })
       .catch(() => {
         // Safe silent fallback to local mock data
+      });
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/accounts")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load accounts");
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setMockAccounts(data.filter((acc) => acc.role === "farmer"));
+        }
+      })
+      .catch((err) => {
+        console.error("Error loading mock accounts:", err);
+      })
+      .finally(() => {
+        setIsLoadingAccounts(false);
       });
   }, []);
 
@@ -193,20 +224,63 @@ export default function FarmerRegistrationPage() {
     }
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setApiError(null);
+    setIsLoggingIn(true);
     const newLoginErrors: Partial<Record<"email" | "password", string>> = {};
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail)) {
-      newLoginErrors.email = "Enter a valid email address.";
+    const emailOrId = loginEmail.trim();
+    const password = loginPassword;
+
+    if (!emailOrId) {
+      newLoginErrors.email = "Username/Email address or Farmer ID is required.";
     }
-    if (loginPassword.length < 6) {
+    if (password.length < 6) {
       newLoginErrors.password = "Password must be at least 6 characters long.";
     }
 
     setLoginErrors(newLoginErrors);
-    if (Object.keys(newLoginErrors).length === 0) {
+    if (Object.keys(newLoginErrors).length > 0) {
+      setIsLoggingIn(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailOrId, password, role: "farmer" }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setApiError(data.error || "Login failed. Invalid credentials.");
+        setIsLoggingIn(false);
+        return;
+      }
+
+      dispatch(setFarmerProfile({
+        name: data.user.name,
+        region: data.user.region,
+        id: data.user.id,
+        avatar: data.user.avatar || "👨🏽‍🌾",
+      }));
+
+      if (data.user.bankDetails) {
+        dispatch(updateFarmerBank(data.user.bankDetails));
+      }
+      if (data.user.avatar) {
+        dispatch(updateFarmerAvatar(data.user.avatar));
+      }
+
+      setLoginErrors({});
       setLoginSuccess(true);
+    } catch (err) {
+      setApiError("A connection error occurred. Please try again.");
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -420,9 +494,45 @@ export default function FarmerRegistrationPage() {
                 <>
                   <div>
                     <h2 className="text-3xl font-extrabold text-gray-700 font-outfit mb-1">Login</h2>
+                    {/* Demo Accounts Quick-Select */}
+                    <div className="mt-3 p-3.5 bg-emerald-50/60 border border-emerald-500/15 rounded-2xl flex flex-col gap-2.5 text-xs text-emerald-900">
+                      <div className="font-extrabold text-[11px] text-emerald-850 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>💡</span> Select a Demo Farmer Account
+                      </div>
+                      <div className="flex flex-col gap-1.5 font-sans">
+                        {mockAccounts.map((acc) => (
+                          <button
+                            key={acc.id}
+                            type="button"
+                            onClick={() => {
+                              setLoginEmail(acc.email);
+                              setLoginPassword("password123");
+                              setApiError(null);
+                            }}
+                            className="w-full flex items-center justify-between p-2 rounded-xl bg-white border border-emerald-100 hover:border-emerald-500/40 hover:bg-emerald-50/50 hover:shadow-sm text-left transition-all cursor-pointer font-medium text-[11px]"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{acc.avatar || "👨🏽‍🌾"}</span>
+                              <div className="flex flex-col">
+                                <span className="font-bold text-gray-800">{acc.name}</span>
+                                <span className="text-[9px] text-gray-500">{acc.region}</span>
+                              </div>
+                            </div>
+                            <span className="text-[8.5px] px-1.5 py-0.5 rounded bg-emerald-100/60 text-emerald-800 font-bold uppercase tracking-wider">
+                              {acc.isVerified ? "Verified" : "Pro"}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
+                    {apiError && (
+                      <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-semibold text-center">
+                        ⚠️ {apiError}
+                      </div>
+                    )}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-wider" htmlFor="loginEmail">
                         Username/Email address <span className="text-red-500">*</span>
@@ -452,7 +562,7 @@ export default function FarmerRegistrationPage() {
                         fullWidth
                         size="small"
                         id="loginPassword"
-                        type="password"
+                        type={showLoginPassword ? "text" : "password"}
                         placeholder="••••••••"
                         value={loginPassword}
                         onChange={(e) => {
@@ -463,6 +573,22 @@ export default function FarmerRegistrationPage() {
                         helperText={loginErrors.password}
                         sx={muiInputStyle(!!loginErrors.password)}
                         required
+                        slotProps={{
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  aria-label="toggle password visibility"
+                                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                                  edge="end"
+                                  size="small"
+                                >
+                                  {showLoginPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }
+                        }}
                       />
                     </div>
 
@@ -471,6 +597,7 @@ export default function FarmerRegistrationPage() {
                         type="submit"
                         variant="outlined"
                         fullWidth
+                        disabled={isLoggingIn}
                         sx={{
                           textTransform: "none",
                           borderRadius: "9999px",
@@ -487,7 +614,7 @@ export default function FarmerRegistrationPage() {
                           }
                         }}
                       >
-                        Sign In
+                        {isLoggingIn ? "Signing In..." : "Sign In"}
                       </Button>
 
                       <div className="flex items-center my-0.5">
@@ -720,7 +847,7 @@ export default function FarmerRegistrationPage() {
                   <TextField
                     fullWidth
                     size="small"
-                    type="password"
+                    type={showRegisterPassword ? "text" : "password"}
                     id="password"
                     name="password"
                     placeholder="••••••••"
@@ -729,6 +856,22 @@ export default function FarmerRegistrationPage() {
                     error={!!errors.password}
                     helperText={errors.password}
                     sx={muiWizardInputStyle}
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                              edge="end"
+                              size="small"
+                            >
+                              {showRegisterPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }
+                    }}
                   />
                 </div>
 

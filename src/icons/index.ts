@@ -10,3 +10,5 @@ export { default as StorefrontIcon } from "@mui/icons-material/Storefront";
 export { default as AssessmentIcon } from "@mui/icons-material/Assessment";
 export { default as LocalAtmIcon } from "@mui/icons-material/LocalAtm";
 export { default as ArrowBackIcon } from "@mui/icons-material/ArrowBack";
+export { default as Visibility } from "@mui/icons-material/Visibility";
+export { default as VisibilityOff } from "@mui/icons-material/VisibilityOff";
